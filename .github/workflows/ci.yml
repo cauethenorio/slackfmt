@@ -76,7 +76,7 @@ jobs:
       - name: Install dependencies
         run: pnpm install
       - name: Build packages
-        run: pnpm -r --filter='!@slackfmt/clipboard' run build
+        run: pnpm -r --filter='@slackfmt/core' --filter='@slackfmt/cli' run build
       - name: Test
         run: pnpm test
 
