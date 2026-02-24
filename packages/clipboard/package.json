@@ -26,7 +26,7 @@
     "access": "public"
   },
   "scripts": {
-    "clean": "rimraf target ./*.node index.js index.d.ts",
+    "clean": "rimraf --glob target *.node index.js index.d.ts",
     "prebuild": "pnpm clean",
     "artifacts": "napi artifacts",
     "build": "napi build --release --platform",
