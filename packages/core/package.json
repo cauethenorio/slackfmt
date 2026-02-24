@@ -1,6 +1,11 @@
 {
   "name": "@slackfmt/core",
   "version": "0.1.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cauethenorio/slackfmt",
+    "directory": "packages/core"
+  },
   "publishConfig": {
     "registry": "https://registry.npmjs.org/",
     "access": "public"

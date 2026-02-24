@@ -1,6 +1,11 @@
 {
   "name": "@slackfmt/clipboard",
   "version": "0.1.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cauethenorio/slackfmt",
+    "directory": "packages/clipboard"
+  },
   "type": "commonjs",
   "keywords": ["slack", "clipboard", "napi", "native", "chromium", "paste"],
   "main": "index.js",

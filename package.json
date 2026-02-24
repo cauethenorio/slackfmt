@@ -1,5 +1,9 @@
 {
   "name": "slackfmt",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cauethenorio/slackfmt"
+  },
   "packageManager": "pnpm@10.30.1",
   "private": true,
   "description": "Format Markdown and HTML to paste into Slack with styles preserved.",
