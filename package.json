@@ -11,7 +11,7 @@
     "test:watch": "vitest",
     "changeset": "changeset",
     "version-packages": "changeset version",
-    "publish-packages": "pnpm -r run build && changeset publish",
+    "publish-packages": "pnpm -r --filter='!@slackfmt/clipboard' run build && changeset publish",
     "lint": "pnpm lint:biome && pnpm lint:rust",
     "lint:biome": "biome check .",
     "lint:rust": "cargo fmt --manifest-path packages/clipboard/Cargo.toml -- --check && cargo clippy --manifest-path packages/clipboard/Cargo.toml",
