@@ -1,0 +1,496 @@
+@import url("https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=Lato:wght@400;700;900&display=swap");
+
+:root {
+  --bg: #1a1d21;
+  --bg-elevated: #222529;
+  --text: #d1d2d3;
+  --text-bright: #e8e8e8;
+  --text-muted: #9a9b9d;
+  --border: #383a3e;
+  --composer-border: #565759;
+  --green: #007a5a;
+  --green-hover: #148567;
+  --code-bg: #1e2228;
+  --code-text: #e06c75;
+  --hover: #222529;
+  --link: #1d9bd1;
+  --quote-border: #565759;
+  --header-border: #383a3e;
+  --content-max-width: 800px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  font-family: Lato, "Helvetica Neue", Helvetica, sans-serif;
+  font-size: 17px;
+  line-height: 1.46;
+  color: var(--text);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Shared content constraint ─────────── */
+
+.content-width {
+  max-width: var(--content-max-width);
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* ── Layout ─────────────────────────────── */
+
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+/* ── Channel header ────────────────────── */
+
+.channel-header {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  height: 50px;
+  border-bottom: 1px solid var(--header-border);
+  background: var(--bg);
+  padding: 0 20px;
+}
+
+.channel-name {
+  display: inline-block;
+  position: relative;
+  font-family: "Caveat", cursive;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #1e1a14;
+  letter-spacing: 0.5px;
+  line-height: 1.2;
+  padding: 2px 24px 5px 16px;
+  /* Subtle horizontal fiber texture */
+  background:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 3px,
+      rgba(139, 119, 85, 0.04) 3px,
+      rgba(139, 119, 85, 0.04) 4px
+    ),
+    /* Main tape gradient */
+    linear-gradient(180deg, #e3d7c0 0%, #daceaf 50%, #d4c6a3 100%);
+  transform: rotate(-1.5deg);
+  filter: drop-shadow(0 1.5px 2.5px rgba(0, 0, 0, 0.4));
+  transition:
+    transform 0.2s ease,
+    filter 0.2s ease;
+  animation: tape-place 0.5s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  /* Torn left/right edges, smooth top/bottom */
+  clip-path: polygon(
+    2% 0%,
+    98% 0%,
+    100% 6%,
+    99% 18%,
+    100% 30%,
+    99.3% 42%,
+    100% 54%,
+    99% 66%,
+    100% 78%,
+    99.3% 90%,
+    98% 100%,
+    2% 100%,
+    0% 90%,
+    0.7% 78%,
+    0% 66%,
+    1% 54%,
+    0% 42%,
+    0.7% 30%,
+    0% 18%,
+    1% 6%
+  );
+}
+
+.channel-name:hover {
+  transform: rotate(-1deg) translateY(-1px);
+  filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.35));
+}
+
+/* Subtle crease line across the tape */
+.channel-name::before {
+  content: "";
+  position: absolute;
+  top: 38%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 5%,
+    rgba(0, 0, 0, 0.05) 20%,
+    rgba(0, 0, 0, 0.07) 45%,
+    rgba(0, 0, 0, 0.04) 75%,
+    transparent 95%
+  );
+  transform: rotate(0.3deg);
+  pointer-events: none;
+}
+
+/* Semi-transparent tape edge fade (masking tape translucency) */
+.channel-name::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    to right,
+    rgba(26, 29, 33, 0.18) 0%,
+    transparent 12%,
+    transparent 88%,
+    rgba(26, 29, 33, 0.15) 100%
+  );
+  pointer-events: none;
+}
+
+@keyframes tape-place {
+  from {
+    transform: rotate(-3deg) translateY(-4px);
+    opacity: 0;
+  }
+  to {
+    transform: rotate(-1.5deg);
+    opacity: 1;
+  }
+}
+
+/* ── Messages area ──────────────────────── */
+
+.messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 20px 8px;
+}
+
+.messages > .content-width {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.message {
+  display: flex;
+  gap: 12px;
+  padding: 8px 4px;
+  border-radius: 8px;
+}
+
+.message:hover {
+  background: var(--hover);
+}
+
+.welcome-message {
+  animation: fade-in 0.3s ease-out;
+}
+
+.welcome-message .message-body {
+  font-style: italic;
+  opacity: 0.75;
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #611f69, #e8912d);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 0.8rem;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.message-meta {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 2px;
+}
+
+.message-author {
+  font-weight: 900;
+  font-size: 0.9rem;
+  color: var(--text-bright);
+}
+
+.message-time {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* ── Rich text ──────────────────────────── */
+
+.message-content {
+  min-width: 0;
+  flex: 1;
+}
+
+.message-body {
+  word-break: break-word;
+}
+
+.message-body strong {
+  font-weight: 700;
+}
+
+.message-body code {
+  font-family: Monaco, Menlo, Consolas, monospace;
+  font-size: 0.75rem;
+  padding: 2px 4px;
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  color: var(--code-text);
+}
+
+.message-body pre {
+  font-variant-ligatures: none;
+  white-space: pre;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  word-break: normal;
+  tab-size: 4;
+  border-radius: 4px;
+  margin-bottom: 16px;
+  padding: 8px;
+  font-size: 0.75rem;
+  line-height: 1.50001;
+  font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
+  border: 1px solid rgba(232, 232, 232, 0.13);
+  background: rgba(232, 232, 232, 0.04);
+}
+
+.message-body pre code {
+  padding: 0;
+  background: none;
+  border: none;
+  color: var(--text);
+  line-height: 1.5;
+}
+
+.message-body blockquote {
+  border-left: 4px solid var(--quote-border);
+  padding-left: 12px;
+  margin: 4px 0;
+  color: var(--text-muted);
+}
+
+.message-body a {
+  color: var(--link);
+  text-decoration: none;
+}
+
+.message-body a:hover {
+  text-decoration: underline;
+}
+
+.message-body ul,
+.message-body ol {
+  padding-left: 24px;
+  margin: 2px 0;
+}
+
+.message-body li {
+  padding: 1px 0;
+}
+
+.message-body p {
+  margin-bottom: 4px;
+}
+.message-body p:last-child {
+  margin-bottom: 0;
+}
+
+.message-body p:has(> br:only-child) {
+  line-height: 8px;
+  margin-bottom: 0;
+}
+
+/* ── Debug ─────────────────────────────── */
+
+.debug-delta {
+  margin: 12px 0 0 48px;
+  padding: 10px 12px;
+  font-family: Monaco, Menlo, Consolas, monospace;
+  font-size: 0.6875rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+/* ── Composer ───────────────────────────── */
+
+.composer-area {
+  flex-shrink: 0;
+  padding: 0 20px 20px;
+  border-top: 1px solid var(--border);
+}
+
+.composer-area .content-width {
+  padding-top: 12px;
+}
+
+.composer {
+  border: 1px solid var(--composer-border);
+  border-radius: 8px;
+  background: var(--bg-elevated);
+  overflow: hidden;
+  transition: border-color 0.15s;
+}
+
+.composer:focus-within {
+  border-color: #7a7b7d;
+}
+
+.composer textarea {
+  width: 100%;
+  max-height: 50vh;
+  padding: 12px 14px 0;
+  font-family: Lato, "Helvetica Neue", Helvetica, sans-serif;
+  font-size: 1rem;
+  line-height: 1.46;
+  color: var(--text);
+  background: transparent;
+  border: none;
+  outline: none;
+  resize: none;
+  overflow-y: auto;
+}
+
+.composer textarea::placeholder {
+  color: var(--text-muted);
+}
+
+.composer-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 8px;
+}
+
+.detected-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  background: var(--code-bg);
+  padding: 2px 8px;
+  border-radius: 4px;
+  animation: fade-in 0.2s;
+}
+
+.send-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  padding: 5px 12px;
+  font-family: Lato, "Helvetica Neue", sans-serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #fff;
+  background: var(--green);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    opacity 0.15s;
+}
+
+.send-btn:hover:not(:disabled) {
+  background: var(--green-hover);
+}
+
+.send-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+/* ── Message actions row ───────────────── */
+
+.message-actions-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 6px;
+}
+
+.reaction-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  font-size: 0.75rem;
+  color: var(--text);
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  animation: fade-in 0.2s;
+  user-select: none;
+}
+
+.copy-action-btn {
+  margin-left: auto;
+  padding: 5px 12px;
+  font-family: Lato, "Helvetica Neue", sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #fff;
+  background: var(--green);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.copy-action-btn:hover {
+  background: var(--green-hover);
+}

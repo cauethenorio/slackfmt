@@ -1,0 +1,7 @@
+{
+  "name": "@slackfmt/clipboard-darwin-arm64",
+  "version": "0.1.0",
+  "os": ["darwin"],
+  "cpu": ["arm64"],
+  "main": "clipboard.darwin-arm64.node"
+}

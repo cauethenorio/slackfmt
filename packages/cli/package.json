@@ -1,0 +1,26 @@
+{
+  "name": "@slackfmt/cli",
+  "version": "0.1.0",
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/",
+    "access": "public"
+  },
+  "type": "module",
+  "bin": {
+    "slackfmt": "./dist/index.js"
+  },
+  "scripts": {
+    "clean": "rimraf dist",
+    "prebuild": "pnpm clean",
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@slackfmt/clipboard": "workspace:*",
+    "@slackfmt/core": "workspace:*",
+    "meow": "^13.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0"
+  }
+}

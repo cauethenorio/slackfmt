@@ -1,0 +1,8 @@
+{
+  "name": "@slackfmt/clipboard-linux-arm64-gnu",
+  "version": "0.1.0",
+  "os": ["linux"],
+  "cpu": ["arm64"],
+  "main": "clipboard.linux-arm64-gnu.node",
+  "libc": ["glibc"]
+}

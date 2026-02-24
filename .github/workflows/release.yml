@@ -1,0 +1,54 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  WORKING_DIR: packages/clipboard
+
+jobs:
+  build-native:
+    name: Build Native
+    uses: ./.github/workflows/build-native.yml
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    needs:
+      - build-native
+    permissions:
+      contents: write
+      pull-requests: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v6
+      - name: Setup node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+      - uses: pnpm/action-setup@v4
+      - name: Install dependencies
+        run: pnpm install
+      - name: Create npm dirs
+        run: pnpm --filter @slackfmt/clipboard exec napi create-npm-dirs
+      - name: Download all artifacts
+        uses: actions/download-artifact@v7
+        with:
+          path: ${{ env.WORKING_DIR }}/artifacts
+      - name: Move artifacts
+        run: pnpm --filter @slackfmt/clipboard artifacts
+      - name: Create Release PR or Publish
+        uses: changesets/action@v1
+        with:
+          publish: pnpm publish-packages
+          version: pnpm version-packages
+          title: "Release packages"
+          commit: "Version packages"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
