@@ -36,12 +36,5 @@
   },
   "devDependencies": {
     "@napi-rs/cli": "^3.0.0"
-  },
-  "optionalDependencies": {
-    "@slackfmt/clipboard-darwin-arm64": "0.1.0",
-    "@slackfmt/clipboard-darwin-x64": "0.1.0",
-    "@slackfmt/clipboard-win32-x64-msvc": "0.1.0",
-    "@slackfmt/clipboard-linux-x64-gnu": "0.1.0",
-    "@slackfmt/clipboard-linux-arm64-gnu": "0.1.0"
   }
 }
