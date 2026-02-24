@@ -20,6 +20,7 @@ export function Composer({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Auto-resize textarea to fit content
+  // biome-ignore lint/correctness/useExhaustiveDependencies: textareaRef is stable and we only want to run this when text changes
   useEffect(() => {
     const ta = textareaRef.current;
     if (!ta) return;
