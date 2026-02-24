@@ -100,7 +100,7 @@ fn pickle_string(buf: &mut Vec<u8>, s: &str) {
 
     let byte_len = utf16.len() * 2;
     let padding = (4 - (byte_len % 4)) % 4;
-    buf.extend(std::iter::repeat(0u8).take(padding));
+    buf.extend(std::iter::repeat_n(0u8, padding));
 }
 
 // ── Chromium Pickle decoding ──────────────────────────────
