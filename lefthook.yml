@@ -1,0 +1,14 @@
+pre-commit:
+  parallel: true
+  jobs:
+    - name: biome
+      glob: "*.{js,ts,jsx,tsx,json}"
+      run: pnpm lint:biome && pnpm format:biome
+
+    - name: cargo fmt
+      glob: "packages/clipboard/**/*.rs"
+      run: cargo fmt --manifest-path packages/clipboard/Cargo.toml -- --check
+
+    - name: clippy
+      glob: "packages/clipboard/**/*.rs"
+      run: cargo clippy --manifest-path packages/clipboard/Cargo.toml
