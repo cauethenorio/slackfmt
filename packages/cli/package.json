@@ -6,6 +6,8 @@
     "access": "public"
   },
   "type": "module",
+  "keywords": ["slack", "markdown", "html", "clipboard", "paste", "formatting", "cli"],
+  "files": ["dist"],
   "bin": {
     "slackfmt": "./dist/index.js"
   },

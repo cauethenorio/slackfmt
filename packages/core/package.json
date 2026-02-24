@@ -6,6 +6,8 @@
     "access": "public"
   },
   "type": "module",
+  "keywords": ["slack", "markdown", "html", "rich-text", "quill-delta", "formatter", "converter"],
+  "files": ["dist"],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",

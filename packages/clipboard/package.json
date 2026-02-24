@@ -2,6 +2,7 @@
   "name": "@slackfmt/clipboard",
   "version": "0.1.0",
   "type": "commonjs",
+  "keywords": ["slack", "clipboard", "napi", "native", "chromium", "paste"],
   "main": "index.js",
   "types": "index.d.ts",
   "files": [
@@ -27,7 +28,6 @@
   },
   "scripts": {
     "clean": "rimraf --glob target *.node index.js index.d.ts",
-    "prebuild": "pnpm clean",
     "artifacts": "napi artifacts",
     "build": "napi build --release --platform",
     "build:debug": "napi build --platform",
