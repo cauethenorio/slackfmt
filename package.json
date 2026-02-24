@@ -12,9 +12,13 @@
     "changeset": "changeset",
     "version-packages": "changeset version",
     "publish-packages": "pnpm -r run build && changeset publish",
-    "lint": "biome check . && cargo fmt --manifest-path packages/clipboard/Cargo.toml -- --check && cargo clippy --manifest-path packages/clipboard/Cargo.toml",
+    "lint": "pnpm lint:biome && pnpm lint:rust",
+    "lint:biome": "biome check .",
+    "lint:rust": "cargo fmt --manifest-path packages/clipboard/Cargo.toml -- --check && cargo clippy --manifest-path packages/clipboard/Cargo.toml",
     "lint:fix": "biome check --write .",
-    "format": "biome format --write . && cargo fmt --manifest-path packages/clipboard/Cargo.toml"
+    "format": "pnpm format:biome && pnpm format:rust",
+    "format:biome": "biome format --write .",
+    "format:rust": "cargo fmt --manifest-path packages/clipboard/Cargo.toml"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.4.4",
