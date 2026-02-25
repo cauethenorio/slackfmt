@@ -1,4 +1,4 @@
-name: Release
+name: Prepare Release
 
 on:
   push:
@@ -13,7 +13,7 @@ on:
       - .editorconfig
 
 concurrency:
-  group: release-${{ github.ref }}
+  group: prepare-release-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
@@ -52,7 +52,7 @@ jobs:
     uses: ./.github/workflows/_test-native.yml
 
   release:
-    name: Release
+    name: Create Release PR or Publish
     if: >-
       always() &&
       !contains(needs.*.result, 'failure')
@@ -68,6 +68,11 @@ jobs:
       pull-requests: write
       id-token: write
     steps:
+      - uses: actions/create-github-app-token@v2
+        id: app-token
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
       - uses: actions/checkout@v6
       - name: Setup node
         uses: actions/setup-node@v6
@@ -95,6 +100,6 @@ jobs:
           title: "Release packages"
           commit: "Version packages"
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
