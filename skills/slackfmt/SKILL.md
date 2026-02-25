@@ -1,6 +1,6 @@
 ---
 name: slackfmt
-description: Use when formatting text for Slack — converting markdown, HTML, or other content to Slack-compatible rich text and copying to clipboard so it pastes with formatting preserved
+description: Use when formatting or copying content, markdown or plain text, for Slack with rich text preserved
 ---
 
 # slackfmt
