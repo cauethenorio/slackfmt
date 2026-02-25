@@ -35,6 +35,8 @@ jobs:
         run: pnpm -r --filter='@slackfmt/core' run build
       - name: Build web
         run: pnpm -r --filter='@slackfmt/web' run build
+        env:
+          GOOGLE_TAG_ID: ${{ vars.GOOGLE_TAG_ID }}
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
