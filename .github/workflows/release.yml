@@ -1,0 +1,58 @@
+name: Release
+
+on:
+  workflow_run:
+    workflows: ["Checks"]
+    types: [completed]
+    branches: [main]
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Release
+    if: github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+      - name: Setup node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+      - uses: pnpm/action-setup@v4
+      - name: Install dependencies
+        run: pnpm install
+      - name: Download native artifacts
+        id: download-artifacts
+        uses: actions/download-artifact@v7
+        continue-on-error: true
+        with:
+          path: packages/clipboard/artifacts
+          pattern: bindings-*
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create npm dirs
+        if: steps.download-artifacts.outcome == 'success'
+        run: pnpm --filter @slackfmt/clipboard exec napi create-npm-dirs
+      - name: Move artifacts
+        if: steps.download-artifacts.outcome == 'success'
+        run: pnpm --filter @slackfmt/clipboard artifacts
+      - name: Create Release PR or Publish
+        uses: changesets/action@v1
+        with:
+          publish: pnpm publish-packages
+          version: pnpm version-packages
+          title: "Release packages"
+          commit: "Version packages"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: true

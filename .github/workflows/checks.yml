@@ -1,4 +1,4 @@
-name: CI
+name: Checks
 
 on:
   push:
@@ -177,53 +177,3 @@ jobs:
           name: test-bindings-${{ matrix.target }}
           options: "-v ${{ github.workspace }}:${{ github.workspace }} -w ${{ github.workspace }} --platform ${{ steps.docker.outputs.PLATFORM }}"
           args: sh -c "corepack enable && pnpm test"
-
-  release:
-    name: Release
-    if: >-
-      always() &&
-      github.event_name == 'push' &&
-      !contains(needs.*.result, 'failure')
-    needs:
-      - lint
-      - lint-rust
-      - test
-      - build-native
-      - test-native-macos-windows
-      - test-native-linux
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      pull-requests: write
-      id-token: write
-    steps:
-      - uses: actions/checkout@v6
-      - name: Setup node
-        uses: actions/setup-node@v6
-        with:
-          node-version: 22
-      - uses: pnpm/action-setup@v4
-      - name: Install dependencies
-        run: pnpm install
-      - name: Create npm dirs
-        if: needs.build-native.result == 'success'
-        run: pnpm --filter @slackfmt/clipboard exec napi create-npm-dirs
-      - name: Download all artifacts
-        if: needs.build-native.result == 'success'
-        uses: actions/download-artifact@v7
-        with:
-          path: packages/clipboard/artifacts
-      - name: Move artifacts
-        if: needs.build-native.result == 'success'
-        run: pnpm --filter @slackfmt/clipboard artifacts
-      - name: Create Release PR or Publish
-        uses: changesets/action@v1
-        with:
-          publish: pnpm publish-packages
-          version: pnpm version-packages
-          title: "Release packages"
-          commit: "Version packages"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NPM_CONFIG_PROVENANCE: true
