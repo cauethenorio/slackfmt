@@ -76,6 +76,42 @@ describe("convert markdown to quill delta", () => {
     );
   });
 
+  it("converts table to code block", async () => {
+    const result = await convert("| A | B |\n|---|---|\n| 1 | 2 |", { format: "markdown" });
+    expect(result).toBe(
+      delta(
+        { insert: "A   B" },
+        { insert: "\n", attributes: { "code-block": true } },
+        { insert: "─   ─" },
+        { insert: "\n", attributes: { "code-block": true } },
+        { insert: "1   2" },
+        { insert: "\n", attributes: { "code-block": true } },
+      ),
+    );
+  });
+
+  it("converts table with inline code to code block", async () => {
+    const input = [
+      "| Endpoint | Before | After |",
+      "|---|---|---|",
+      "| `/api/uploads` | `multipart/form-data` | `streaming` |",
+      "| `/api/reports` | sync response | async with `202 Accepted` |",
+    ].join("\n");
+    const result = await convert(input, { format: "markdown" });
+    expect(result).toBe(
+      delta(
+        { insert: "Endpoint       Before                After                  " },
+        { insert: "\n", attributes: { "code-block": true } },
+        { insert: "────────────   ───────────────────   ───────────────────────" },
+        { insert: "\n", attributes: { "code-block": true } },
+        { insert: "/api/uploads   multipart/form-data   streaming              " },
+        { insert: "\n", attributes: { "code-block": true } },
+        { insert: "/api/reports   sync response         async with 202 Accepted" },
+        { insert: "\n", attributes: { "code-block": true } },
+      ),
+    );
+  });
+
   it("converts heading to bold", async () => {
     const result = await convert("# Hello", { format: "markdown" });
     expect(result).toBe(delta({ insert: "Hello", attributes: { bold: true } }, { insert: "\n" }));
