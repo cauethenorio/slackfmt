@@ -54,7 +54,7 @@ export async function run(): Promise<void> {
   const delta = await convert(input, { format });
 
   if (cli.flags.stdout) {
-    process.stdout.write(delta);
+    process.stdout.write(`${delta}\n`);
   } else {
     writeClipboard(input, delta);
     console.error("Copied to clipboard!");
