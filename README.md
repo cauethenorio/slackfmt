@@ -30,7 +30,7 @@ Once installed, just ask your agent to format something for Slack — it will co
 
 ### Web
 
-Try it in the browser at [slackfmt.lab.caue.dev](https://slackfmt.lab.caue.dev).
+Try it in the browser at [slackfmt.labs.caue.dev](https://slackfmt.labs.caue.dev).
 
 ## How it works
 
