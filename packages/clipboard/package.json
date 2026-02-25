@@ -32,7 +32,7 @@
     "access": "public"
   },
   "scripts": {
-    "clean": "rimraf --glob target *.node index.js index.d.ts",
+    "clean": "rimraf --glob target *.node",
     "artifacts": "napi artifacts",
     "build": "napi build --release --platform",
     "build:debug": "napi build --platform",
