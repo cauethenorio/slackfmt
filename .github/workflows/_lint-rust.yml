@@ -1,0 +1,17 @@
+name: Lint Rust
+on:
+  workflow_call:
+jobs:
+  lint-rust:
+    name: Lint Rust
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+      - name: Cargo fmt
+        run: cargo fmt --manifest-path packages/clipboard/Cargo.toml -- --check
+      - name: Clippy
+        run: cargo clippy --manifest-path packages/clipboard/Cargo.toml

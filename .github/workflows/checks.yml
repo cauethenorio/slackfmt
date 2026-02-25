@@ -1,16 +1,6 @@
 name: Checks
 
 on:
-  push:
-    branches:
-      - main
-    tags-ignore:
-      - "**"
-    paths-ignore:
-      - "**/*.md"
-      - LICENSE
-      - "**/*.gitignore"
-      - .editorconfig
   pull_request:
 
 concurrency:
@@ -33,147 +23,21 @@ jobs:
               - 'packages/clipboard/**'
 
   lint:
-    name: Lint
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-      - name: Setup node
-        uses: actions/setup-node@v6
-        with:
-          node-version: 22
-      - uses: pnpm/action-setup@v4
-      - name: Install dependencies
-        run: pnpm install
-      - name: Biome
-        run: pnpm lint:biome
+    uses: ./.github/workflows/_lint.yml
 
   lint-rust:
-    name: Lint Rust
     needs: detect-changes
     if: needs.detect-changes.outputs.clipboard == 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          components: clippy, rustfmt
-      - name: Cargo fmt
-        run: cargo fmt --manifest-path packages/clipboard/Cargo.toml -- --check
-      - name: Clippy
-        run: cargo clippy --manifest-path packages/clipboard/Cargo.toml
+    uses: ./.github/workflows/_lint-rust.yml
 
   test:
-    name: Test
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-      - name: Setup node
-        uses: actions/setup-node@v6
-        with:
-          node-version: 22
-      - uses: pnpm/action-setup@v4
-      - name: Install dependencies
-        run: pnpm install
-      - name: Build packages
-        run: pnpm -r --filter='@slackfmt/core' --filter='@slackfmt/cli' run build
-      - name: Test
-        run: pnpm test
+    uses: ./.github/workflows/_test.yml
 
   build-native:
-    name: Build Native
     needs: detect-changes
     if: needs.detect-changes.outputs.clipboard == 'true'
-    uses: ./.github/workflows/build-native.yml
+    uses: ./.github/workflows/_build-native.yml
 
-  test-native-macos-windows:
-    name: Test bindings on ${{ matrix.settings.target }} - node@${{ matrix.node }}
-    needs:
-      - build-native
-    strategy:
-      fail-fast: false
-      matrix:
-        settings:
-          - host: windows-latest
-            target: x86_64-pc-windows-msvc
-            architecture: x64
-          - host: macos-latest
-            target: aarch64-apple-darwin
-            architecture: arm64
-          - host: macos-latest
-            target: x86_64-apple-darwin
-            architecture: x64
-        node:
-          - "20"
-          - "22"
-    runs-on: ${{ matrix.settings.host }}
-    steps:
-      - uses: actions/checkout@v6
-      - name: Setup node
-        uses: actions/setup-node@v6
-        with:
-          node-version: ${{ matrix.node }}
-          architecture: ${{ matrix.settings.architecture }}
-      - uses: pnpm/action-setup@v4
-      - name: Install dependencies
-        run: pnpm install
-      - name: Download artifacts
-        uses: actions/download-artifact@v7
-        with:
-          name: bindings-${{ matrix.settings.target }}
-          path: packages/clipboard
-      - name: Test bindings
-        run: pnpm test
-
-  test-native-linux:
-    name: Test ${{ matrix.target }} - node@${{ matrix.node }}
-    needs:
-      - build-native
-    strategy:
-      fail-fast: false
-      matrix:
-        target:
-          - x86_64-unknown-linux-gnu
-          - aarch64-unknown-linux-gnu
-        node:
-          - "20"
-          - "22"
-    runs-on: ${{ contains(matrix.target, 'aarch64') && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
-    steps:
-      - uses: actions/checkout@v6
-      - name: Setup node
-        uses: actions/setup-node@v6
-        with:
-          node-version: ${{ matrix.node }}
-      - uses: pnpm/action-setup@v4
-      - name: Output docker params
-        id: docker
-        run: |
-          node -e "
-            if ('${{ matrix.target }}'.startsWith('aarch64')) {
-              console.log('PLATFORM=linux/arm64')
-            } else {
-              console.log('PLATFORM=linux/amd64')
-            }
-          " >> $GITHUB_OUTPUT
-          node -e "
-            if ('${{ matrix.target }}'.endsWith('-musl')) {
-              console.log('IMAGE=node:${{ matrix.node }}-alpine')
-            } else {
-              console.log('IMAGE=node:${{ matrix.node }}-slim')
-            }
-          " >> $GITHUB_OUTPUT
-      - name: Install dependencies
-        run: pnpm install
-      - name: Download artifacts
-        uses: actions/download-artifact@v7
-        with:
-          name: bindings-${{ matrix.target }}
-          path: packages/clipboard
-      - name: Test bindings
-        uses: tj-actions/docker-run@v2
-        with:
-          image: ${{ steps.docker.outputs.IMAGE }}
-          name: test-bindings-${{ matrix.target }}
-          options: "-v ${{ github.workspace }}:${{ github.workspace }} -w ${{ github.workspace }} --platform ${{ steps.docker.outputs.PLATFORM }}"
-          args: sh -c "corepack enable && pnpm test"
+  test-native:
+    needs: build-native
+    uses: ./.github/workflows/_test-native.yml

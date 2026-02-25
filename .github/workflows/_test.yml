@@ -1,0 +1,20 @@
+name: Test
+on:
+  workflow_call:
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Setup node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+      - uses: pnpm/action-setup@v4
+      - name: Install dependencies
+        run: pnpm install
+      - name: Build packages
+        run: pnpm -r --filter='@slackfmt/core' --filter='@slackfmt/cli' run build
+      - name: Test
+        run: pnpm test
