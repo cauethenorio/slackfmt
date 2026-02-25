@@ -1,6 +1,6 @@
 {
   "name": "@slackfmt/core",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/cauethenorio/slackfmt",
@@ -11,8 +11,18 @@
     "access": "public"
   },
   "type": "module",
-  "keywords": ["slack", "markdown", "html", "rich-text", "quill-delta", "formatter", "converter"],
-  "files": ["dist"],
+  "keywords": [
+    "slack",
+    "markdown",
+    "html",
+    "rich-text",
+    "quill-delta",
+    "formatter",
+    "converter"
+  ],
+  "files": [
+    "dist"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
