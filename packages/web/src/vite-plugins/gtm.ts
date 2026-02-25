@@ -5,7 +5,7 @@ export function gtmPlugin(): Plugin {
     name: "gtm",
     transformIndexHtml() {
       const id = process.env.GOOGLE_TAG_ID;
-      if (!id) return [];
+      if (!id || !/^GTM-[A-Z0-9]+$/.test(id)) return [];
 
       return [
         {
