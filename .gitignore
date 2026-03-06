@@ -2,5 +2,9 @@ node_modules/
 dist/
 *.tsbuildinfo
 .DS_Store
+.agents/
+.claude/settings.local.json
 .claude/skills
+.playwright/
+packages/web/.playwright-cli/
 docs/plans

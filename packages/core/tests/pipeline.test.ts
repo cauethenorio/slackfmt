@@ -188,4 +188,25 @@ describe("convert quill delta to quill delta (roundtrip)", () => {
       delta({ insert: "item" }, { insert: "\n", attributes: { list: "bullet" } }),
     );
   });
+
+  it("roundtrips complex nested list (markdown → delta → delta)", async () => {
+    const markdown = [
+      "## Migration steps",
+      "",
+      "1. Pull the latest from `main`",
+      "2. Run the migration script",
+      "   - Back up your database first",
+      "   - Check you're on Node 22+",
+      "3. Verify everything works",
+      "   1. Dashboard loads correctly",
+      "   2. File uploads complete without errors",
+      "   3. Reports export as expected",
+      "      - CSV format",
+      "      - PDF format",
+    ].join("\n");
+
+    const delta1 = await convert(markdown, { format: "markdown" });
+    const delta2 = await convert(delta1, { format: "quill-delta" });
+    expect(delta2).toBe(delta1);
+  });
 });

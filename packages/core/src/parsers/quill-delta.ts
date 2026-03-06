@@ -55,25 +55,34 @@ function collectLines(ops: DeltaOp[]): Line[] {
 function buildMarkdown(lines: Line[]): string {
   const parts: string[] = [];
   let i = 0;
-  let orderedCounter = 0;
+  const orderedCounters = new Map<number, number>();
 
   while (i < lines.length) {
     const line = lines[i];
     const blockType = getBlockType(line.attributes);
 
     if (blockType === "bullet") {
-      const indent = ((line.attributes.indent as number) || 0) * 2;
+      const indentLevel = (line.attributes.indent as number) || 0;
+      // Reset ordered counter at this indent level (switching list type resets numbering)
+      orderedCounters.delete(indentLevel);
+      const indent = indentLevel * 4;
       const prefix = `${" ".repeat(indent)}- `;
       parts.push(prefix + inlineMarkdown(line.segments));
       i++;
     } else if (blockType === "ordered") {
-      orderedCounter++;
-      const indent = ((line.attributes.indent as number) || 0) * 3;
-      const prefix = `${" ".repeat(indent)}${orderedCounter}. `;
+      const indentLevel = (line.attributes.indent as number) || 0;
+      const counter = (orderedCounters.get(indentLevel) || 0) + 1;
+      orderedCounters.set(indentLevel, counter);
+      // Reset counters for deeper levels
+      for (const key of orderedCounters.keys()) {
+        if (key > indentLevel) orderedCounters.delete(key);
+      }
+      const indent = indentLevel * 4;
+      const prefix = `${" ".repeat(indent)}${counter}. `;
       parts.push(prefix + inlineMarkdown(line.segments));
       i++;
     } else if (blockType === "code-block") {
-      orderedCounter = 0;
+      orderedCounters.clear();
       const codeLines: string[] = [];
       while (i < lines.length && getBlockType(lines[i].attributes) === "code-block") {
         codeLines.push(rawText(lines[i].segments));
@@ -81,7 +90,7 @@ function buildMarkdown(lines: Line[]): string {
       }
       parts.push(`\`\`\`\n${codeLines.join("\n")}\n\`\`\``);
     } else if (blockType === "blockquote") {
-      orderedCounter = 0;
+      orderedCounters.clear();
       const quoteLines: string[] = [];
       while (i < lines.length && getBlockType(lines[i].attributes) === "blockquote") {
         quoteLines.push(`> ${inlineMarkdown(lines[i].segments)}`);
@@ -89,12 +98,12 @@ function buildMarkdown(lines: Line[]): string {
       }
       parts.push(quoteLines.join("\n"));
     } else if (blockType === "header") {
-      orderedCounter = 0;
+      orderedCounters.clear();
       const level = Math.min(Math.max((line.attributes.header as number) || 1, 1), 6);
       parts.push(`${"#".repeat(level)} ${inlineMarkdown(line.segments)}`);
       i++;
     } else {
-      orderedCounter = 0;
+      orderedCounters.clear();
       parts.push(inlineMarkdown(line.segments));
       i++;
     }
