@@ -1,37 +1,30 @@
-import { convert, formats } from "@slackfmt/core";
+import { convert, formats, quillDeltaToMarkdown } from "@slackfmt/core";
 
-export async function copyForSlack(markdown: string): Promise<void> {
+export async function copyFromEditor(deltaJson: string): Promise<void> {
+  const markdown = quillDeltaToMarkdown(deltaJson);
   if (!markdown.trim()) return;
-  const json = await convert(markdown, { format: "markdown" });
+  const slackDelta = await convert(markdown, { format: "markdown" });
   document.oncopy = (e) => {
     e.preventDefault();
     e.clipboardData?.setData("text/plain", markdown);
-    e.clipboardData?.setData("slack/texty", json);
+    e.clipboardData?.setData("slack/texty", slackDelta);
     document.oncopy = null;
   };
   document.execCommand("copy");
 }
 
-export function extractPastedMarkdown(e: React.ClipboardEvent<HTMLTextAreaElement>): string | null {
+export function extractPastedMarkdown(e: ClipboardEvent): string | null {
+  if (!e.clipboardData) return null;
+
   const clipboardTypes = Array.from(e.clipboardData.types);
-  let matchedMime: string | null = null;
-  let matchedFormat: (typeof formats)[number] | null = null;
   for (const fmt of formats) {
     for (const mime of fmt.mimeTypes) {
       if (clipboardTypes.includes(mime)) {
-        matchedMime = mime;
-        matchedFormat = fmt;
-        break;
+        const data = e.clipboardData.getData(mime);
+        return fmt.toMarkdown(data);
       }
     }
-    if (matchedMime) break;
   }
 
-  if (matchedMime && matchedFormat && matchedMime !== "text/plain") {
-    e.preventDefault();
-    const data = e.clipboardData.getData(matchedMime);
-    return matchedFormat.toMarkdown(data);
-  }
-
-  return null;
+  return e.clipboardData.getData("text/plain") || null;
 }

@@ -1,29 +1,15 @@
 import { SiGithub } from "@icons-pack/react-simple-icons";
 import { useCallback, useState } from "react";
+import { DualPaneEditor } from "./components/DualPaneEditor";
 import { Link } from "./components/Link";
-import { TextArea } from "./components/TextArea";
-import { copyForSlack, extractPastedMarkdown } from "./utils/clipboard";
 
 export function App() {
-  const [text, setText] = useState("");
   const [copied, setCopied] = useState(false);
 
-  const handleCopy = useCallback(async (markdown: string) => {
-    await copyForSlack(markdown);
+  const handleCopied = useCallback(() => {
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   }, []);
-
-  const handlePaste = useCallback(
-    (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
-      const markdown = extractPastedMarkdown(e);
-      if (markdown) {
-        setText(markdown);
-        handleCopy(markdown);
-      }
-    },
-    [handleCopy],
-  );
 
   return (
     <div className="relative flex h-screen flex-col overflow-hidden bg-surface font-display text-text antialiased">
@@ -50,7 +36,7 @@ export function App() {
       </header>
 
       {/* Main */}
-      <main className="flex-1 flex flex-col items-center px-4 max-w-5xl mx-auto w-full py-12 min-h-0">
+      <main className="flex-1 flex flex-col items-center px-4 max-w-7xl mx-auto w-full py-12 min-h-0">
         <div className="w-full flex flex-col gap-8 min-h-0 flex-1">
           <div className="text-center space-y-2 shrink-0">
             <h1 className="text-3xl lg:text-4xl font-bold tracking-tight text-text">
@@ -58,16 +44,7 @@ export function App() {
             </h1>
           </div>
 
-          <TextArea
-            value={text}
-            copied={copied}
-            onChange={(value) => {
-              setText(value);
-              setCopied(false);
-            }}
-            onPaste={handlePaste}
-            onCopy={() => handleCopy(text)}
-          />
+          <DualPaneEditor copied={copied} onCopied={handleCopied} />
         </div>
       </main>
 
