@@ -1,5 +1,5 @@
+import { SiGithub } from "@icons-pack/react-simple-icons";
 import { useState } from "react";
-
 import { DualPaneEditor } from "./components/DualPaneEditor";
 import { Link } from "./components/Link";
 import { useTheme } from "./hooks/useTheme";
@@ -39,16 +39,34 @@ export function App() {
             </h1>
           </div>
 
-          <DualPaneEditor theme={theme} onToggleTheme={toggleTheme} />
+          <DualPaneEditor />
         </div>
       </main>
 
       {/* Footer */}
-      <footer className="py-3 md:py-6 text-center text-base text-text-muted">
+      <footer className="py-3 md:py-6 text-center text-base text-text-muted flex items-center justify-center gap-4">
+        <a
+          href="https://github.com/cauethenorio/slackfmt"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="GitHub"
+          className="flex items-center justify-center w-8 h-8 rounded-lg text-text-muted hover:text-text hover:bg-surface-card transition-colors"
+        >
+          <SiGithub size={16} />
+        </a>
         <p>
           Also available as <Link href="https://github.com/cauethenorio/slackfmt#cli">CLI</Link> and{" "}
           <Link href="https://skills.sh/cauethenorio/slackfmt/slackfmt">Agent Skill</Link>.
         </p>
+        <button
+          type="button"
+          onClick={toggleTheme}
+          className="flex items-center justify-center w-8 h-8 rounded-lg text-text-muted hover:text-text hover:bg-surface-card transition-colors cursor-pointer text-sm"
+          title={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
+          aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
+        >
+          {theme === "dark" ? "☀️" : "🌙"}
+        </button>
       </footer>
     </div>
   );
