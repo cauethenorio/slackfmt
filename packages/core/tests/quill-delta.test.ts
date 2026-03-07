@@ -126,6 +126,39 @@ describe("quillDeltaToMarkdown", () => {
     expect(md).toContain("- item");
   });
 
+  it("merges adjacent bold segments", () => {
+    const delta = JSON.stringify({
+      ops: [
+        { insert: "1. Create ", attributes: { bold: true } },
+        { insert: "file.ts", attributes: { bold: true, code: true } },
+        { insert: "\n" },
+      ],
+    });
+    expect(quillDeltaToMarkdown(delta)).toBe("**1. Create `file.ts`**");
+  });
+
+  it("merges adjacent italic segments", () => {
+    const delta = JSON.stringify({
+      ops: [
+        { insert: "hello ", attributes: { italic: true } },
+        { insert: "world", attributes: { italic: true } },
+        { insert: "\n" },
+      ],
+    });
+    expect(quillDeltaToMarkdown(delta)).toBe("*hello world*");
+  });
+
+  it("does not merge segments with different outer formatting", () => {
+    const delta = JSON.stringify({
+      ops: [
+        { insert: "bold ", attributes: { bold: true } },
+        { insert: "italic", attributes: { italic: true } },
+        { insert: "\n" },
+      ],
+    });
+    expect(quillDeltaToMarkdown(delta)).toBe("**bold** *italic*");
+  });
+
   it("converts combined bold + italic", () => {
     const delta = JSON.stringify({
       ops: [{ insert: "both", attributes: { bold: true, italic: true } }, { insert: "\n" }],
@@ -140,7 +173,7 @@ describe("quillDeltaToMarkdown", () => {
         { insert: "\n" },
       ],
     });
-    expect(quillDeltaToMarkdown(delta)).toBe("[**click**](https://example.com)");
+    expect(quillDeltaToMarkdown(delta)).toBe("**[click](https://example.com)**");
   });
 
   it("converts multi-line blockquote", () => {
