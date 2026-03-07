@@ -123,20 +123,70 @@ function getBlockType(
   return null;
 }
 
+/**
+ * Get the outer wrapping markers for a segment's attributes.
+ * "Outer" means markers that can span multiple segments (bold, italic, strike).
+ * "Inner" means per-segment markers (code, link) that differ between segments.
+ */
+function outerMarkerKey(attrs: Record<string, unknown>): string {
+  const parts: string[] = [];
+  if (attrs.bold) parts.push("bold");
+  if (attrs.italic) parts.push("italic");
+  if (attrs.strike) parts.push("strike");
+  return parts.join(",");
+}
+
 function inlineMarkdown(segments: Segment[]): string {
-  return segments.map((s) => formatSegment(s.text, s.attributes)).join("");
+  const result: string[] = [];
+  let i = 0;
+
+  while (i < segments.length) {
+    const key = outerMarkerKey(segments[i].attributes);
+
+    // Find run of segments sharing the same outer markers
+    let j = i + 1;
+    while (j < segments.length && outerMarkerKey(segments[j].attributes) === key) {
+      j++;
+    }
+
+    // Format inner content for each segment in the run
+    let inner = "";
+    for (let k = i; k < j; k++) {
+      inner += formatSegmentInner(segments[k].text, segments[k].attributes);
+    }
+
+    // Wrap with shared outer markers
+    inner = wrapOuter(inner, segments[i].attributes);
+    result.push(inner);
+    i = j;
+  }
+
+  return result.join("");
 }
 
 function rawText(segments: Segment[]): string {
   return segments.map((s) => s.text).join("");
 }
 
-function formatSegment(text: string, attrs: Record<string, unknown>): string {
+function formatSegmentInner(text: string, attrs: Record<string, unknown>): string {
   let result = text;
-
   if (attrs.code) {
     result = `\`${result}\``;
   }
+  if (attrs.link) {
+    result = `[${result}](${attrs.link})`;
+  }
+  return result;
+}
+
+function wrapOuter(text: string, attrs: Record<string, unknown>): string {
+  if (!attrs.bold && !attrs.italic && !attrs.strike) return text;
+
+  // Trailing spaces must be moved outside markers (e.g. "**bold **" is invalid)
+  const trimmed = text.replace(/\s+$/, "");
+  const trailing = text.slice(trimmed.length);
+
+  let result = trimmed;
   if (attrs.bold) {
     result = `**${result}**`;
   }
@@ -146,9 +196,5 @@ function formatSegment(text: string, attrs: Record<string, unknown>): string {
   if (attrs.strike) {
     result = `~~${result}~~`;
   }
-  if (attrs.link) {
-    result = `[${result}](${attrs.link})`;
-  }
-
-  return result;
+  return result + trailing;
 }
