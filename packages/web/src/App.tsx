@@ -1,134 +1,55 @@
-import { convert, formats } from "@slackfmt/core";
-import { QuillDeltaToHtmlConverter } from "quill-delta-to-html";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { Composer } from "./components/Composer";
-import { MessagePreview } from "./components/MessagePreview";
+import { useState } from "react";
 
-function deltaToHtml(json: string): string {
-  const { ops } = JSON.parse(json);
-  const converter = new QuillDeltaToHtmlConverter(ops, {
-    multiLineParagraph: false,
-  });
-  return converter.convert();
-}
+import { DualPaneEditor } from "./components/DualPaneEditor";
+import { Link } from "./components/Link";
+import { useTheme } from "./hooks/useTheme";
 
-function timeNow(): string {
-  return new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
-}
+const taglines = [
+  "Because pasting into Slack shouldn't kill your links and nested lists",
+  "Because Slack keeps eating your pasted links and nested lists",
+  "Because pasting Markdown into Slack is pain",
+  "Because Slack turns your beautiful pasted Markdown into a mess",
+  "Because Slack thinks your pasted nested lists are just vibes",
+  "Because Slack treats your formatting like a suggestion",
+  "Because life's too short to reformat links and lists in Slack",
+  "Because Slack looks at your nested lists and thinks 'not here'",
+  "Paste Markdown into Slack. For real this time.",
+];
 
 export function App() {
-  const [text, setText] = useState("");
-  const [previewHtml, setPreviewHtml] = useState<string | null>(null);
-  const [messageTime, setMessageTime] = useState(timeNow());
-  const [copied, setCopied] = useState(false);
-  const [detectedType, setDetectedType] = useState<string | null>(null);
-  const hadTextRef = useRef(false);
-
-  // Live preview — update whenever text changes
-  useEffect(() => {
-    setCopied(false);
-    if (!text.trim()) {
-      setPreviewHtml(null);
-      hadTextRef.current = false;
-      return;
-    }
-    if (!hadTextRef.current) {
-      setMessageTime(timeNow());
-      hadTextRef.current = true;
-    }
-    let cancelled = false;
-    convert(text, { format: "markdown" }).then((json) => {
-      if (!cancelled) {
-        setPreviewHtml(deltaToHtml(json));
-      }
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [text]);
-
-  const copyToClipboard = useCallback(async (markdown: string) => {
-    if (!markdown.trim()) return;
-    const json = await convert(markdown, { format: "markdown" });
-    document.oncopy = (e) => {
-      e.preventDefault();
-      e.clipboardData?.setData("text/plain", markdown);
-      e.clipboardData?.setData("slack/texty", json);
-      document.oncopy = null;
-    };
-    document.execCommand("copy");
-    setMessageTime(timeNow());
-    setCopied(true);
-  }, []);
-
-  const handlePaste = useCallback(
-    (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
-      const clipboardTypes = Array.from(e.clipboardData.types);
-      let matchedMime: string | null = null;
-      let matchedFormat: (typeof formats)[number] | null = null;
-      for (const fmt of formats) {
-        for (const mime of fmt.mimeTypes) {
-          if (clipboardTypes.includes(mime)) {
-            matchedMime = mime;
-            matchedFormat = fmt;
-            break;
-          }
-        }
-        if (matchedMime) break;
-      }
-
-      if (matchedMime && matchedFormat && matchedMime !== "text/plain") {
-        e.preventDefault();
-        const data = e.clipboardData.getData(matchedMime);
-        const markdown = matchedFormat.toMarkdown(data);
-        setText(markdown);
-        setDetectedType(matchedMime);
-        copyToClipboard(markdown);
-      } else {
-        setDetectedType("text/plain");
-      }
-    },
-    [copyToClipboard],
-  );
-
-  const handleCopy = useCallback(() => {
-    copyToClipboard(text);
-  }, [text, copyToClipboard]);
-
+  const { theme, toggle: toggleTheme } = useTheme();
+  const [tagline] = useState(() => taglines[Math.floor(Math.random() * taglines.length)]);
   return (
-    <div className="app">
-      <header className="channel-header">
-        <div className="content-width">
-          <span className="channel-name"># slackfmt</span>
-        </div>
-      </header>
+    <div className="relative flex h-screen flex-col overflow-hidden bg-surface font-display text-text antialiased">
+      {/* Main */}
+      <main className="flex-1 flex flex-col items-center px-0 md:px-4 max-w-[1600px] mx-auto w-full pt-6 md:pt-10 min-h-0">
+        <div className="w-full flex flex-col gap-6 md:gap-6 min-h-0 flex-1">
+          <div className="text-center shrink-0">
+            <h1 className="text-xl lg:text-2xl tracking-tight text-text">
+              <span className="font-mono font-bold text-2xl lg:text-3xl tracking-tighter">
+                <span className="text-text">#</span>
+                <span className="text-text">slack</span>
+                <span className="text-slack-pink">f</span>
+                <span className="text-slack-blue">m</span>
+                <span className="text-slack-green">t</span>
+                <span> </span>
+              </span>
 
-      <div className="messages">
-        <div className="content-width">
-          <MessagePreview
-            previewHtml={previewHtml}
-            time={messageTime}
-            copied={copied}
-            onCopy={handleCopy}
-          />
-        </div>
-      </div>
+              <span className="handwritten-underline">{tagline}</span>
+            </h1>
+          </div>
 
-      <div className="composer-area">
-        <div className="content-width">
-          <Composer
-            text={text}
-            detectedType={detectedType}
-            disabled={!text.trim()}
-            onChange={(value) => {
-              setText(value);
-              setDetectedType(null);
-            }}
-            onPaste={handlePaste}
-            onCopy={handleCopy}
-          />
+          <DualPaneEditor theme={theme} onToggleTheme={toggleTheme} />
         </div>
-      </div>
+      </main>
+
+      {/* Footer */}
+      <footer className="py-3 md:py-6 text-center text-base text-text-muted">
+        <p>
+          Also available as <Link href="https://github.com/cauethenorio/slackfmt#cli">CLI</Link> and{" "}
+          <Link href="https://skills.sh/cauethenorio/slackfmt/slackfmt">Agent Skill</Link>.
+        </p>
+      </footer>
     </div>
   );
 }

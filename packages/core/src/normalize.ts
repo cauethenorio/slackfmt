@@ -76,6 +76,17 @@ const processor = unified()
     strong: "*",
     emphasis: "_",
     fences: true,
+    join: [
+      (left, right) => {
+        // Preserve original spacing: if the source had no blank line before a list,
+        // don't add one. remark-stringify defaults to blank lines between all blocks.
+        if (right.type === "list" && left.position && right.position) {
+          const gap = right.position.start.line - left.position.end.line;
+          return gap <= 1 ? 0 : 1;
+        }
+        return undefined;
+      },
+    ],
   });
 
 /**

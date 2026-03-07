@@ -77,7 +77,7 @@ describe("quillDeltaToMarkdown", () => {
         { insert: "\n", attributes: { list: "bullet", indent: 1 } },
       ],
     });
-    expect(quillDeltaToMarkdown(delta)).toBe("- parent\n  - child");
+    expect(quillDeltaToMarkdown(delta)).toBe("- parent\n    - child");
   });
 
   it("converts header", () => {
@@ -166,7 +166,7 @@ describe("quillDeltaToMarkdown", () => {
         { insert: "\n", attributes: { list: "bullet", indent: 2 } },
       ],
     });
-    expect(quillDeltaToMarkdown(delta)).toBe("- level 0\n  - level 1\n    - level 2");
+    expect(quillDeltaToMarkdown(delta)).toBe("- level 0\n    - level 1\n        - level 2");
   });
 
   it("resets ordered list numbering after non-list content", () => {
@@ -198,7 +198,50 @@ describe("quillDeltaToMarkdown", () => {
     });
     const md = quillDeltaToMarkdown(delta);
     expect(md).toContain("1. first");
-    expect(md).toContain("  - sub bullet");
+    expect(md).toContain("    - sub bullet");
     expect(md).toContain("2. second");
+  });
+
+  it("converts complex nested list with mixed types and multiple indent levels", () => {
+    const delta = JSON.stringify({
+      ops: [
+        { insert: "Pull the latest from " },
+        { insert: "main", attributes: { code: true } },
+        { insert: "\n", attributes: { list: "ordered" } },
+        { insert: "Run the migration script" },
+        { insert: "\n", attributes: { list: "ordered" } },
+        { insert: "Back up your database first" },
+        { insert: "\n", attributes: { list: "bullet", indent: 1 } },
+        { insert: "Check you're on Node 22+" },
+        { insert: "\n", attributes: { list: "bullet", indent: 1 } },
+        { insert: "Verify everything works" },
+        { insert: "\n", attributes: { list: "ordered" } },
+        { insert: "Dashboard loads correctly" },
+        { insert: "\n", attributes: { list: "ordered", indent: 1 } },
+        { insert: "File uploads complete without errors" },
+        { insert: "\n", attributes: { list: "ordered", indent: 1 } },
+        { insert: "Reports export as expected" },
+        { insert: "\n", attributes: { list: "ordered", indent: 1 } },
+        { insert: "CSV format" },
+        { insert: "\n", attributes: { list: "bullet", indent: 2 } },
+        { insert: "PDF format" },
+        { insert: "\n", attributes: { list: "bullet", indent: 2 } },
+      ],
+    });
+    const md = quillDeltaToMarkdown(delta);
+    expect(md).toBe(
+      [
+        "1. Pull the latest from `main`",
+        "2. Run the migration script",
+        "    - Back up your database first",
+        "    - Check you're on Node 22+",
+        "3. Verify everything works",
+        "    1. Dashboard loads correctly",
+        "    2. File uploads complete without errors",
+        "    3. Reports export as expected",
+        "        - CSV format",
+        "        - PDF format",
+      ].join("\n"),
+    );
   });
 });

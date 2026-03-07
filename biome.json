@@ -18,6 +18,12 @@
       "recommended": true
     }
   },
+  "css": {
+    "parser": {
+      "cssModules": false,
+      "tailwindDirectives": true
+    }
+  },
   "files": {
     "includes": ["packages/*/src/**", "packages/*/tests/**", "*.json", "packages/*/vite.config.ts"]
   }
