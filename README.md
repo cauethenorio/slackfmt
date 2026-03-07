@@ -1,8 +1,8 @@
 # #slackfmt
 
-**Paste Markdown into Slack. For real this time.**
+### Because life's too short to reformat links and lists in Slack
 
-You know the drill. You spend 5 minutes crafting a perfectly formatted message: nested lists, labeled links,
+You know the drill: You spend 5 minutes crafting, or prompting, a perfectly formatted message: nested lists, labeled links,
 code blocks, and paste it into Slack.
 
 Slack looks at your formatting, says "lol no", and turns it into a wall of plain text with some random asterisks.
