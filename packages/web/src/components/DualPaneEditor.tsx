@@ -1,8 +1,9 @@
-import { useCallback, useRef, useState } from "react";
+import { useRef, useState } from "react";
+import { useClipboard } from "../hooks/useClipboard";
+import { useLayout } from "../hooks/useLayout";
 import { useMarkdownConverter } from "../hooks/useMarkdownConverter";
 import { useScrollSync } from "../hooks/useScrollSync";
 import type { Theme } from "../hooks/useTheme";
-import { copyFromEditor } from "../utils/clipboard";
 import { CopyFlash } from "./CopyFlash";
 import { layoutIcons } from "./LayoutIcons";
 import { MarkdownPane } from "./MarkdownPane";
@@ -11,16 +12,6 @@ import { NeoButton } from "./NeoButton";
 import { PaneHeader } from "./PaneHeader";
 import { QuillPane } from "./QuillPane";
 
-type Layout = "md-large" | "equal" | "preview-large";
-
-const layoutOrder: Layout[] = ["equal", "md-large", "preview-large"];
-
-const layoutClasses: Record<Layout, [string, string]> = {
-  "md-large": ["flex-[2] md:flex-none md:w-2/3", "flex-1 md:flex-none md:w-1/3"],
-  equal: ["flex-1 md:flex-none md:w-1/2", "flex-1 md:flex-none md:w-1/2"],
-  "preview-large": ["flex-1 md:flex-none md:w-1/3", "flex-[2] md:flex-none md:w-2/3"],
-};
-
 interface DualPaneEditorProps {
   theme: Theme;
   onToggleTheme: () => void;
@@ -28,37 +19,14 @@ interface DualPaneEditorProps {
 
 export function DualPaneEditor({ theme, onToggleTheme }: DualPaneEditorProps) {
   const [markdown, setMarkdown] = useState("");
-  const [flash, setFlash] = useState(false);
-  const [layout, setLayout] = useState<Layout>("equal");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const quillScrollRef = useRef<HTMLElement | null>(null);
 
   const { deltaJson, hasContent } = useMarkdownConverter(markdown);
-  const [mdClasses, previewClasses] = layoutClasses[layout];
+  const { layout, cycleLayout, mdClasses, previewClasses } = useLayout();
+  const { flash, handleCopy } = useClipboard(deltaJson);
 
   useScrollSync(textareaRef, quillScrollRef, hasContent);
-
-  const cycleLayout = useCallback(() => {
-    setLayout((prev) => {
-      const idx = layoutOrder.indexOf(prev);
-      return layoutOrder[(idx + 1) % layoutOrder.length];
-    });
-  }, []);
-
-  const handleCopy = useCallback(async () => {
-    if (!deltaJson) return;
-    try {
-      await copyFromEditor(deltaJson);
-      setFlash(true);
-      setTimeout(() => setFlash(false), 700);
-    } catch {
-      // Clipboard write failed silently — no flash shown
-    }
-  }, [deltaJson]);
-
-  const handlePaste = useCallback((pastedMarkdown: string) => {
-    setMarkdown(pastedMarkdown);
-  }, []);
 
   return (
     <div className="relative w-full flex-1 min-h-0 flex flex-col">
@@ -79,7 +47,7 @@ export function DualPaneEditor({ theme, onToggleTheme }: DualPaneEditorProps) {
                 ref={textareaRef}
                 value={markdown}
                 onChange={setMarkdown}
-                onPaste={handlePaste}
+                onPaste={setMarkdown}
               />
               {hasContent && (
                 <NeoButton
