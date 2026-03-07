@@ -19,6 +19,7 @@
   flex: 1;
   min-height: 0;
   overflow-y: auto;
+  background: var(--color-surface-card);
 }
 
 /* Editor */
@@ -27,7 +28,7 @@
   line-height: 1.5;
   font-size: 17px;
   font-family: Slack-Lato, Lato, "Noto Sans", appleLogo, sans-serif;
-  color: #d1d2d3;
+  color: var(--color-text-secondary);
 }
 
 .ql-editor p,
@@ -51,11 +52,11 @@
 }
 
 .ql-editor strong {
-  color: #fff;
+  color: var(--color-text);
 }
 
 .ql-editor a {
-  color: #1d9bd1;
+  color: var(--color-text-link);
   text-decoration: underline;
 }
 
@@ -67,6 +68,10 @@
   background: rgba(232, 163, 73, 0.1);
   border: 1px solid rgba(232, 163, 73, 0.2);
   border-radius: 3px;
+  color: #c2792a;
+}
+
+.dark .ql-editor code {
   color: #e8a349;
 }
 
@@ -77,7 +82,7 @@
   font-size: 85%;
   line-height: 1.5;
   padding: 8px 12px;
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(0, 0, 0, 0.04);
   border: 1px solid var(--color-border-subtle);
   border-radius: 4px;
   color: var(--color-text-secondary);
@@ -85,11 +90,16 @@
   overflow-x: auto;
 }
 
+.dark .ql-editor pre.ql-syntax,
+.dark .ql-editor .ql-code-block-container {
+  background: rgba(255, 255, 255, 0.04);
+}
+
 /* Blockquotes */
 .ql-editor blockquote {
   border-left: 4px solid var(--color-text);
   padding-left: 12px;
-  color: #d1d2d3;
+  color: var(--color-text-secondary);
 }
 
 /* Lists — Slack-like: 28px per indent level, cycling bullet styles */

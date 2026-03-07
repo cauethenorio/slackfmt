@@ -10,6 +10,8 @@ export async function copyFromEditor(deltaJson: string): Promise<void> {
     e.clipboardData?.setData("slack/texty", slackDelta);
     document.oncopy = null;
   };
+  // execCommand is deprecated but required to set custom MIME types (slack/texty)
+  // that the async Clipboard API does not support
   document.execCommand("copy");
 }
 

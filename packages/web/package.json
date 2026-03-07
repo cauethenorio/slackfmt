@@ -11,9 +11,11 @@
   "dependencies": {
     "@icons-pack/react-simple-icons": "^13.11.2",
     "@slackfmt/core": "workspace:*",
+    "clsx": "^2.1.1",
     "quill": "^2.0.3",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "tailwind-merge": "^3.5.0"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.2.1",

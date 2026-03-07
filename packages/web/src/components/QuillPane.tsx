@@ -62,5 +62,11 @@ export function QuillPane({ deltaJson, scrollRef }: QuillPaneProps) {
     quill.setContents(delta, "silent");
   }, [deltaJson]);
 
-  return <div ref={containerRef} className="flex-1 min-h-0 flex flex-col" />;
+  return (
+    <section
+      ref={containerRef}
+      aria-label="Slack preview"
+      className="flex-1 min-h-0 flex flex-col"
+    />
+  );
 }

@@ -27,10 +27,13 @@ export const MarkdownPane = forwardRef<HTMLTextAreaElement, MarkdownPaneProps>(
         value={value}
         onChange={(e) => onChange(e.target.value)}
         onPaste={handlePaste}
-        placeholder="Type or paste Markdown here..."
+        aria-label="Markdown input"
+        placeholder="Type or paste your formatted content here..."
         spellCheck={false}
-        className="w-full h-full resize-none bg-transparent text-text font-mono text-sm leading-relaxed p-5 outline-none placeholder:text-text-subtle"
+        className="w-full h-full resize-none bg-transparent text-text-secondary font-mono text-sm leading-relaxed p-5 outline-none placeholder:text-text-subtle"
       />
     );
   },
 );
+
+MarkdownPane.displayName = "MarkdownPane";

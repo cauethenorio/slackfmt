@@ -1,176 +1,121 @@
-import { convert } from "@slackfmt/core";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
+import { useMarkdownConverter } from "../hooks/useMarkdownConverter";
+import { useScrollSync } from "../hooks/useScrollSync";
+import type { Theme } from "../hooks/useTheme";
 import { copyFromEditor } from "../utils/clipboard";
+import { CopyFlash } from "./CopyFlash";
+import { layoutIcons } from "./LayoutIcons";
 import { MarkdownPane } from "./MarkdownPane";
+import { NavButtons } from "./NavButtons";
+import { NeoButton } from "./NeoButton";
+import { PaneHeader } from "./PaneHeader";
 import { QuillPane } from "./QuillPane";
 
+type Layout = "md-large" | "equal" | "preview-large";
+
+const layoutOrder: Layout[] = ["equal", "md-large", "preview-large"];
+
+const layoutClasses: Record<Layout, [string, string]> = {
+  "md-large": ["flex-[2] md:flex-none md:w-2/3", "flex-1 md:flex-none md:w-1/3"],
+  equal: ["flex-1 md:flex-none md:w-1/2", "flex-1 md:flex-none md:w-1/2"],
+  "preview-large": ["flex-1 md:flex-none md:w-1/3", "flex-[2] md:flex-none md:w-2/3"],
+};
+
 interface DualPaneEditorProps {
-  copied: boolean;
-  onCopied: () => void;
+  theme: Theme;
+  onToggleTheme: () => void;
 }
 
-export function DualPaneEditor({ copied, onCopied }: DualPaneEditorProps) {
+export function DualPaneEditor({ theme, onToggleTheme }: DualPaneEditorProps) {
   const [markdown, setMarkdown] = useState("");
-  const [deltaJson, setDeltaJson] = useState<string | null>(null);
+  const [flash, setFlash] = useState(false);
+  const [layout, setLayout] = useState<Layout>("equal");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const quillScrollRef = useRef<HTMLElement | null>(null);
-  const scrollingFrom = useRef<"textarea" | "quill" | null>(null);
 
-  const hasContent = markdown.trim().length > 0;
+  const { deltaJson, hasContent } = useMarkdownConverter(markdown);
+  const [mdClasses, previewClasses] = layoutClasses[layout];
 
-  // Bidirectional proportional scroll sync
-  useEffect(() => {
-    if (!hasContent) return;
+  useScrollSync(textareaRef, quillScrollRef, hasContent);
 
-    const textarea = textareaRef.current;
-    const getQuillEl = () => quillScrollRef.current;
-
-    function syncScroll(source: "textarea" | "quill") {
-      const quillEl = getQuillEl();
-      if (!textarea || !quillEl) return;
-      if (scrollingFrom.current && scrollingFrom.current !== source) return;
-
-      scrollingFrom.current = source;
-
-      const from = source === "textarea" ? textarea : quillEl;
-      const to = source === "textarea" ? quillEl : textarea;
-      const maxFrom = from.scrollHeight - from.clientHeight;
-      const maxTo = to.scrollHeight - to.clientHeight;
-      if (maxFrom > 0 && maxTo > 0) {
-        to.scrollTop = (from.scrollTop / maxFrom) * maxTo;
-      }
-
-      requestAnimationFrame(() => {
-        scrollingFrom.current = null;
-      });
-    }
-
-    const onTextareaScroll = () => syncScroll("textarea");
-    const onQuillScroll = () => syncScroll("quill");
-
-    textarea?.addEventListener("scroll", onTextareaScroll, { passive: true });
-
-    // Quill root may mount after this effect, poll briefly
-    let quillEl = getQuillEl();
-    const tryAttach = () => {
-      quillEl = getQuillEl();
-      if (quillEl) {
-        quillEl.addEventListener("scroll", onQuillScroll, { passive: true });
-        return true;
-      }
-      return false;
-    };
-
-    if (!tryAttach()) {
-      const id = setInterval(() => {
-        if (tryAttach()) clearInterval(id);
-      }, 50);
-      // Stop trying after 1s
-      setTimeout(() => clearInterval(id), 1000);
-    }
-
-    return () => {
-      textarea?.removeEventListener("scroll", onTextareaScroll);
-      quillEl?.removeEventListener("scroll", onQuillScroll);
-    };
-  }, [hasContent]);
-
-  // Convert markdown → delta JSON (no debounce)
-  useEffect(() => {
-    if (!hasContent) {
-      setDeltaJson(null);
-      return;
-    }
-
-    let cancelled = false;
-    convert(markdown, { format: "markdown" }).then((result) => {
-      if (cancelled) return;
-      setDeltaJson(result);
+  const cycleLayout = useCallback(() => {
+    setLayout((prev) => {
+      const idx = layoutOrder.indexOf(prev);
+      return layoutOrder[(idx + 1) % layoutOrder.length];
     });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [markdown, hasContent]);
-
-  // Paste: set markdown + auto-copy
-  const handlePaste = useCallback(
-    (pastedMarkdown: string) => {
-      setMarkdown(pastedMarkdown);
-      convert(pastedMarkdown, { format: "markdown" })
-        .then((result) => copyFromEditor(result))
-        .then(() => onCopied())
-        .catch(() => {});
-    },
-    [onCopied],
-  );
+  }, []);
 
   const handleCopy = useCallback(async () => {
     if (!deltaJson) return;
-    await copyFromEditor(deltaJson);
-    onCopied();
-  }, [deltaJson, onCopied]);
+    try {
+      await copyFromEditor(deltaJson);
+      setFlash(true);
+      setTimeout(() => setFlash(false), 700);
+    } catch {
+      // Clipboard write failed silently — no flash shown
+    }
+  }, [deltaJson]);
+
+  const handlePaste = useCallback((pastedMarkdown: string) => {
+    setMarkdown(pastedMarkdown);
+  }, []);
 
   return (
-    <div className="relative w-full group flex-1 min-h-0 flex flex-col">
-      <div className="absolute -inset-0.5 bg-gradient-to-r from-accent/20 to-accent/5 rounded-xl blur opacity-10 group-hover:opacity-20 transition duration-1000" />
-      <div className="relative bg-surface border border-border-subtle has-[:focus-within]:border-border-focus rounded-xl overflow-hidden shadow-2xl flex flex-col flex-1 min-h-0 transition-colors">
-        {/* Copy flash overlay */}
-        {copied && (
-          <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none animate-copy-flash">
-            <span className="text-2xl font-bold tracking-wide uppercase text-surface">Copied!</span>
-          </div>
-        )}
+    <div className="relative w-full flex-1 min-h-0 flex flex-col">
+      {/* Theme & GitHub buttons — right of markdown title on mobile, fixed top-right on desktop */}
+      <div className="absolute -top-3 right-4 md:fixed md:top-4 md:right-4 lg:right-6 z-30 flex items-center gap-2 md:gap-3">
+        <NavButtons theme={theme} onToggleTheme={onToggleTheme} />
+      </div>
 
-        <div className="flex-1 min-h-0 flex flex-col md:flex-row">
-          {/* Markdown Textarea Pane */}
+      <div className="relative bg-surface-card border-[3px] border-border rounded-none md:rounded-2xl overflow-hidden shadow-none md:shadow-[6px_6px_0px_0px_var(--color-neo-shadow)] flex flex-col flex-1 min-h-0">
+        <div className="flex-1 min-h-0 flex flex-col md:flex-row relative">
+          {/* Markdown Pane */}
           <div
-            className={`flex flex-col min-h-0 ${hasContent ? "md:w-1/2 md:border-r border-border-subtle" : "w-full"} transition-all`}
+            className={`flex flex-col min-h-0 transition-all ${hasContent ? `${mdClasses} md:border-r-[3px] md:border-border` : "w-full"}`}
           >
-            <div className="px-4 py-2 border-b border-border-subtle shrink-0">
-              <span className="text-xs font-semibold uppercase tracking-wider text-text-muted">
-                Markdown
-              </span>
-            </div>
-            <div className="flex-1 min-h-0">
+            <PaneHeader label="Markdown" color="slack-pink" />
+            <div className="flex-1 min-h-0 relative">
               <MarkdownPane
                 ref={textareaRef}
                 value={markdown}
                 onChange={setMarkdown}
                 onPaste={handlePaste}
               />
+              {hasContent && (
+                <NeoButton
+                  size="sm"
+                  onClick={cycleLayout}
+                  title="Change layout"
+                  aria-label="Change layout"
+                  className="absolute bottom-4 right-4 z-10"
+                >
+                  {layoutIcons[layout]}
+                </NeoButton>
+              )}
             </div>
           </div>
 
           {/* Quill Preview Pane */}
           {hasContent && (
-            <div className="md:w-1/2 flex flex-col min-h-0 animate-slide-up md:animate-none border-t md:border-t-0 border-border-subtle">
-              <div className="px-4 py-2 border-b border-border-subtle shrink-0">
-                <span className="text-xs font-semibold uppercase tracking-wider text-text-muted">
-                  Slack Preview
-                </span>
-              </div>
+            <div
+              className={`relative ${previewClasses} flex flex-col min-h-0 animate-slide-up md:animate-none border-t-[3px] md:border-t-0 border-border transition-all`}
+            >
+              <CopyFlash visible={flash} />
+              <PaneHeader label="Slack Preview" color="slack-blue" />
               <QuillPane deltaJson={deltaJson} scrollRef={quillScrollRef} />
             </div>
           )}
         </div>
 
-        {/* Copy Button */}
+        {/* Floating Copy button */}
         {hasContent && (
-          <div className="flex justify-center px-8 py-4 shrink-0 animate-slide-up border-t border-border-subtle">
-            <button
-              type="button"
-              onClick={handleCopy}
-              disabled={copied}
-              className={`px-5 py-2.5 font-bold rounded-lg text-sm transition-all duration-200 uppercase ${
-                copied
-                  ? "bg-success/20 text-success border border-success/30 cursor-default animate-wobble"
-                  : "bg-success/70 hover:bg-success/90 text-white cursor-pointer"
-              }`}
-            >
-              {copied ? "Copied to clipboard!" : "Copy Formatted for Slack"}
-            </button>
-          </div>
+          <NeoButton
+            size="lg"
+            onClick={handleCopy}
+            className="absolute bottom-4 right-4 z-10 bg-slack-green text-white"
+          >
+            Copy
+          </NeoButton>
         )}
       </div>
     </div>
