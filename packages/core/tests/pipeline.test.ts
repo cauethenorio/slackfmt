@@ -143,11 +143,25 @@ describe("convert markdown to quill delta", () => {
     );
   });
 
-  it("converts paragraph then list", async () => {
+  it("converts paragraph then list with blank line", async () => {
     const result = await convert("Line 1\n\n- item 1\n- item 2", { format: "markdown" });
     expect(result).toBe(
       delta(
         { insert: "Line 1\n\nitem 1" },
+        { insert: "\n", attributes: { list: "bullet" } },
+        { insert: "item 2" },
+        { insert: "\n", attributes: { list: "bullet" } },
+      ),
+    );
+  });
+
+  it("converts paragraph then list without blank line", async () => {
+    const result = await convert("Single-column, vertically centered:\n- item 1\n- item 2", {
+      format: "markdown",
+    });
+    expect(result).toBe(
+      delta(
+        { insert: "Single-column, vertically centered:\nitem 1" },
         { insert: "\n", attributes: { list: "bullet" } },
         { insert: "item 2" },
         { insert: "\n", attributes: { list: "bullet" } },
