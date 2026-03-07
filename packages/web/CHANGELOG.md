@@ -1,5 +1,13 @@
 # @slackfmt/web
 
+## 0.2.1
+
+### Patch Changes
+
+- Updated dependencies [7617ca6]
+- Updated dependencies [7617ca6]
+  - @slackfmt/core@0.3.1
+
 ## 0.2.0
 
 ### Minor Changes
