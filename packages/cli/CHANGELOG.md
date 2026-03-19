@@ -1,5 +1,13 @@
 # @slackfmt/cli
 
+## 0.2.3
+
+### Patch Changes
+
+- Updated dependencies [7617ca6]
+- Updated dependencies [7617ca6]
+  - @slackfmt/core@0.3.1
+
 ## 0.2.2
 
 ### Patch Changes

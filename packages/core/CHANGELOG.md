@@ -1,5 +1,12 @@
 # @slackfmt/core
 
+## 0.3.1
+
+### Patch Changes
+
+- 7617ca6: Fix adjacent bold/italic/strike segments producing invalid markdown markers
+- 7617ca6: Preserve original spacing before lists instead of always inserting a blank line
+
 ## 0.3.0
 
 ### Minor Changes
