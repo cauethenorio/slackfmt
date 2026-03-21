@@ -11,12 +11,21 @@ export const MarkdownPane = forwardRef<HTMLTextAreaElement, MarkdownPaneProps>(
   ({ value, onChange, onPaste }, ref) => {
     const handlePaste = useCallback(
       (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
-        const markdown = extractPastedMarkdown(e.nativeEvent);
-        if (!markdown) return;
+        const pasted = extractPastedMarkdown(e.nativeEvent);
+        if (!pasted) return;
 
         e.preventDefault();
-        onChange(markdown);
-        onPaste?.(markdown);
+        const ta = e.currentTarget;
+        const before = ta.value.slice(0, ta.selectionStart);
+        const after = ta.value.slice(ta.selectionEnd);
+        const merged = before + pasted + after;
+        onChange(merged);
+        onPaste?.(merged);
+
+        const cursorPos = before.length + pasted.length;
+        requestAnimationFrame(() => {
+          ta.setSelectionRange(cursorPos, cursorPos);
+        });
       },
       [onChange, onPaste],
     );
