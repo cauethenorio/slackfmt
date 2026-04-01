@@ -18,7 +18,7 @@
   --color-label-markdown: #e01e5a;
   --color-label-preview: #36c5f0;
   --color-copy-btn: #1a9963;
-  --color-privacy-bg: rgba(253, 248, 244, 0.85);
+  --color-privacy-bg: rgba(253, 248, 244, 0.35);
 }
 
 /* ── Dark mode ── */
@@ -39,7 +39,7 @@
   --color-label-markdown: #e01e5a;
   --color-label-preview: #36c5f0;
   --color-copy-btn: #1a9963;
-  --color-privacy-bg: rgba(26, 26, 46, 0.85);
+  --color-privacy-bg: rgba(26, 26, 46, 0.35);
 }
 
 @theme inline {

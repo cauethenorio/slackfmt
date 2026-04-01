@@ -85,10 +85,9 @@ export function DualPaneEditor() {
           </span>
         </div>
         <div className="flex-1 min-h-0 flex flex-col">
-          <QuillPane deltaJson={deltaJson} scrollRef={quillScrollRef}>
-            {hasContent && <CopyButton onClick={handleCopy} />}
-          </QuillPane>
+          <QuillPane deltaJson={deltaJson} scrollRef={quillScrollRef} />
         </div>
+        {hasContent && <CopyButton onClick={handleCopy} />}
       </div>
 
       <PrivacyNotice />
