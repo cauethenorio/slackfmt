@@ -15,6 +15,12 @@ function getEffectiveTheme(): Theme {
 
 function applyTheme(theme: Theme) {
   document.documentElement.classList.toggle("dark", theme === "dark");
+  const surface = getComputedStyle(document.documentElement)
+    .getPropertyValue("--color-surface")
+    .trim();
+  if (surface) {
+    document.querySelector('meta[name="theme-color"]')?.setAttribute("content", surface);
+  }
 }
 
 // Tiny external store so all consumers stay in sync

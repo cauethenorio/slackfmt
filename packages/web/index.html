@@ -5,14 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <meta name="theme-color" content="#fdf8f4" />
     <title># slackfmt | Instant Slack Formatting</title>
   </head>
   <body>
     <script>
       (function() {
         var saved = localStorage.getItem('theme');
-        if (saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        var isDark = saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        if (isDark) {
           document.documentElement.classList.add('dark');
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#1a1a2e');
         }
       })();
     </script>
