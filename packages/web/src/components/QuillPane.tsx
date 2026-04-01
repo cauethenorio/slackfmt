@@ -1,8 +1,13 @@
-import Quill from "quill";
+import Quill, { Parchment } from "quill";
 import "quill/dist/quill.core.css";
 import "../quill.css";
 import { useEffect, useRef } from "react";
-import { replaceEmojiShortcodes } from "../emoji";
+import { transformDeltaForPreview } from "../delta-transform";
+
+const MentionClass = new Parchment.ClassAttributor("mention", "ql-mention", {
+  scope: Parchment.Scope.INLINE,
+});
+Quill.register(MentionClass, true);
 
 const FORMATS = [
   "bold",
@@ -14,6 +19,7 @@ const FORMATS = [
   "indent",
   "blockquote",
   "code-block",
+  "mention",
 ];
 
 interface QuillPaneProps {
@@ -60,7 +66,7 @@ export function QuillPane({ deltaJson, scrollRef }: QuillPaneProps) {
     }
 
     const delta = JSON.parse(deltaJson);
-    quill.setContents(replaceEmojiShortcodes(delta).ops, "silent");
+    quill.setContents(transformDeltaForPreview(delta).ops, "silent");
   }, [deltaJson]);
 
   return (
