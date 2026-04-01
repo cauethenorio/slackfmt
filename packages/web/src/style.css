@@ -80,13 +80,6 @@
   --animate-copy-flash: copy-flash 0.7s ease-out forwards;
 }
 
-* {
-  transition:
-    background-color 0.15s ease,
-    color 0.15s ease,
-    border-color 0.15s ease;
-}
-
 .dark * {
   scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
 }

@@ -32,7 +32,9 @@ export function DualPaneEditor() {
   return (
     <div className="relative flex-1 flex flex-col md:flex-row min-h-0">
       {/* Markdown Pane */}
-      <div className={`flex flex-col min-h-0 flex-1 ${mdClass} transition-all`}>
+      <div
+        className={`flex flex-col min-h-0 flex-1 ${mdClass} transition-[width,flex] duration-150`}
+      >
         <div className="px-4 pt-2.5 pb-1 shrink-0">
           <span className="text-xs font-semibold uppercase tracking-wider text-label-markdown">
             Markdown
@@ -76,7 +78,7 @@ export function DualPaneEditor() {
 
       {/* Preview Pane */}
       <div
-        className={`relative flex flex-col min-h-0 flex-1 ${previewClass} bg-surface-output transition-all`}
+        className={`relative flex flex-col min-h-0 flex-1 ${previewClass} bg-surface-output transition-[width,flex] duration-150`}
       >
         {hasContent && <CopyFlash visible={flash} />}
         <div className="px-4 pt-2.5 pb-1 shrink-0">
