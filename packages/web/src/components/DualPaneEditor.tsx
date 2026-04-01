@@ -11,9 +11,9 @@ import { PrivacyNotice } from "./PrivacyNotice";
 import { QuillPane } from "./QuillPane";
 
 const layoutClasses: Record<string, [string, string]> = {
-  "md-large": ["md:w-2/3", "md:w-1/3"],
-  equal: ["md:w-1/2", "md:w-1/2"],
-  "preview-large": ["md:w-1/3", "md:w-2/3"],
+  "md-large": ["md:flex-none md:w-2/3", "md:flex-none md:w-1/3"],
+  equal: ["md:flex-none md:w-1/2", "md:flex-none md:w-1/2"],
+  "preview-large": ["md:flex-none md:w-1/3", "md:flex-none md:w-2/3"],
 };
 
 export function DualPaneEditor() {
@@ -49,14 +49,13 @@ export function DualPaneEditor() {
       </div>
 
       {/* Divider with layout toggle (desktop only) */}
-      <div className="hidden md:flex items-center justify-center relative">
-        <div className="w-[2px] h-full bg-border" />
+      <div className="hidden md:block relative w-[2px] shrink-0 bg-border">
         <button
           type="button"
           onClick={cycleLayout}
           title="Change layout"
           aria-label="Change layout"
-          className="absolute w-8 h-8 rounded-full border border-border bg-surface flex items-center justify-center text-text-muted hover:text-text cursor-pointer z-10 transition-colors"
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 rounded-full border border-border bg-surface flex items-center justify-center text-text-muted hover:text-text cursor-pointer z-10 transition-colors"
         >
           {layoutIcons[layout]}
         </button>
