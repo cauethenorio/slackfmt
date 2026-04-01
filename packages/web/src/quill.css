@@ -19,7 +19,7 @@
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-  background: var(--color-surface-card);
+  background: var(--color-surface-output);
 }
 
 /* Editor */
