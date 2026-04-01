@@ -16,8 +16,8 @@
   --color-slack-pink: #e01e5a;
   --color-slack-blue: #36c5f0;
   --color-label-markdown: #e01e5a;
-  --color-label-preview: #36c5f0;
-  --color-copy-btn: #1a9963;
+  --color-label-preview: #1a8fb5;
+  --color-copy-btn: #14804e;
   --color-privacy-bg: rgba(253, 248, 244, 0.35);
 }
 
@@ -38,7 +38,7 @@
   --color-slack-blue: #36c5f0;
   --color-label-markdown: #e01e5a;
   --color-label-preview: #36c5f0;
-  --color-copy-btn: #1a9963;
+  --color-copy-btn: #14804e;
   --color-privacy-bg: rgba(26, 26, 46, 0.35);
 }
 
