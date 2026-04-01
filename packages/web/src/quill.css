@@ -25,10 +25,14 @@
 /* Editor */
 .ql-editor {
   padding: 1.25rem 2rem;
-  line-height: 1.5;
-  font-size: 17px;
-  font-family: Slack-Lato, Lato, "Noto Sans", appleLogo, sans-serif;
-  color: var(--color-text-secondary);
+  line-height: 1.46668;
+  font-size: 15px;
+  font-family: Slack-Lato, Lato, appleLogo, sans-serif;
+  color: #1d1c1d;
+}
+
+.dark .ql-editor {
+  color: #d1d2d3;
 }
 
 .ql-editor p,
