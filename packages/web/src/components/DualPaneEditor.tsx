@@ -3,12 +3,18 @@ import { useClipboard } from "../hooks/useClipboard";
 import { useLayout } from "../hooks/useLayout";
 import { useMarkdownConverter } from "../hooks/useMarkdownConverter";
 import { useScrollSync } from "../hooks/useScrollSync";
+import { CopyButton } from "./CopyButton";
 import { CopyFlash } from "./CopyFlash";
 import { layoutIcons } from "./LayoutIcons";
 import { MarkdownPane } from "./MarkdownPane";
-import { NeoButton } from "./NeoButton";
-import { PaneHeader } from "./PaneHeader";
+import { PrivacyNotice } from "./PrivacyNotice";
 import { QuillPane } from "./QuillPane";
+
+const layoutClasses: Record<string, [string, string]> = {
+  "md-large": ["md:w-2/3", "md:w-1/3"],
+  equal: ["md:w-1/2", "md:w-1/2"],
+  "preview-large": ["md:w-1/3", "md:w-2/3"],
+};
 
 export function DualPaneEditor() {
   const [markdown, setMarkdown] = useState("");
@@ -16,65 +22,67 @@ export function DualPaneEditor() {
   const quillScrollRef = useRef<HTMLElement | null>(null);
 
   const { deltaJson, hasContent } = useMarkdownConverter(markdown);
-  const { layout, cycleLayout, mdClasses, previewClasses } = useLayout();
+  const { layout, cycleLayout } = useLayout();
   const { flash, handleCopy } = useClipboard(deltaJson);
 
   useScrollSync(textareaRef, quillScrollRef, hasContent);
 
+  const [mdClass, previewClass] = layoutClasses[layout];
+
   return (
-    <div className="relative w-full flex-1 min-h-0 flex flex-col">
-      <div className="relative bg-surface-card border-[3px] border-border rounded-none md:rounded-2xl overflow-hidden shadow-none md:shadow-[6px_6px_0px_0px_var(--color-neo-shadow)] flex flex-col flex-1 min-h-0">
-        <div className="flex-1 min-h-0 flex flex-col md:flex-row relative">
-          {/* Markdown Pane */}
-          <div
-            className={`flex flex-col min-h-0 transition-all ${hasContent ? `${mdClasses} md:border-r-[3px] md:border-border` : "w-full"}`}
-          >
-            <PaneHeader label="Markdown" color="slack-pink">
-              <div className="w-7 h-7 invisible" aria-hidden="true" />
-            </PaneHeader>
-            <div className="flex-1 min-h-0 relative">
-              <MarkdownPane
-                ref={textareaRef}
-                value={markdown}
-                onChange={setMarkdown}
-                onPaste={setMarkdown}
-              />
-            </div>
-          </div>
-
-          {/* Quill Preview Pane */}
-          {hasContent && (
-            <div
-              className={`relative ${previewClasses} flex flex-col min-h-0 animate-slide-up md:animate-none border-t-[3px] md:border-t-0 border-border transition-all`}
-            >
-              <CopyFlash visible={flash} />
-              <PaneHeader label="Slack Preview" color="slack-blue">
-                <button
-                  type="button"
-                  onClick={cycleLayout}
-                  title="Change layout"
-                  aria-label="Change layout"
-                  className="flex items-center justify-center w-7 h-7 rounded-lg border border-border/50 hover:bg-black/10 transition-colors cursor-pointer"
-                >
-                  {layoutIcons[layout]}
-                </button>
-              </PaneHeader>
-              <QuillPane deltaJson={deltaJson} scrollRef={quillScrollRef} />
-            </div>
-          )}
+    <div className="relative flex-1 flex flex-col md:flex-row min-h-0">
+      {/* Markdown Pane */}
+      <div className={`flex flex-col min-h-0 flex-1 ${mdClass} transition-all`}>
+        <div className="px-4 pt-2.5 pb-1 shrink-0">
+          <span className="text-xs font-semibold uppercase tracking-wider text-label-markdown">
+            Markdown
+          </span>
         </div>
-
-        {/* Floating Copy button */}
-        {hasContent && (
-          <NeoButton
-            size="lg"
-            onClick={handleCopy}
-            className="absolute bottom-4 right-4 z-10 bg-slack-green text-white"
-          >
-            Copy
-          </NeoButton>
-        )}
+        <div className="flex-1 min-h-0">
+          <MarkdownPane
+            ref={textareaRef}
+            value={markdown}
+            onChange={setMarkdown}
+            onPaste={setMarkdown}
+          />
+        </div>
       </div>
+
+      {/* Divider with layout toggle (desktop only) */}
+      <div className="hidden md:flex items-center justify-center relative">
+        <div className="w-[2px] h-full bg-border" />
+        <button
+          type="button"
+          onClick={cycleLayout}
+          title="Change layout"
+          aria-label="Change layout"
+          className="absolute w-8 h-8 rounded-full border border-border bg-surface flex items-center justify-center text-text-muted hover:text-text cursor-pointer z-10 transition-colors"
+        >
+          {layoutIcons[layout]}
+        </button>
+      </div>
+
+      {/* Mobile divider */}
+      <div className="md:hidden h-[2px] bg-border shrink-0" />
+
+      {/* Preview Pane */}
+      <div
+        className={`relative flex flex-col min-h-0 flex-1 ${previewClass} bg-surface-output transition-all`}
+      >
+        {hasContent && <CopyFlash visible={flash} />}
+        <div className="px-4 pt-2.5 pb-1 shrink-0">
+          <span className="text-xs font-semibold uppercase tracking-wider text-label-preview">
+            Slack Preview
+          </span>
+        </div>
+        <div className="flex-1 min-h-0 flex flex-col">
+          <QuillPane deltaJson={deltaJson} scrollRef={quillScrollRef}>
+            {hasContent && <CopyButton onClick={handleCopy} />}
+          </QuillPane>
+        </div>
+      </div>
+
+      <PrivacyNotice />
     </div>
   );
 }

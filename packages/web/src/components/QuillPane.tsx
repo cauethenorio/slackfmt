@@ -18,9 +18,10 @@ const FORMATS = [
 interface QuillPaneProps {
   deltaJson: string | null;
   scrollRef?: React.MutableRefObject<HTMLElement | null>;
+  children?: React.ReactNode;
 }
 
-export function QuillPane({ deltaJson, scrollRef }: QuillPaneProps) {
+export function QuillPane({ deltaJson, scrollRef, children }: QuillPaneProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const quillRef = useRef<Quill | null>(null);
 
@@ -66,7 +67,9 @@ export function QuillPane({ deltaJson, scrollRef }: QuillPaneProps) {
     <section
       ref={containerRef}
       aria-label="Slack preview"
-      className="flex-1 min-h-0 flex flex-col"
-    />
+      className="flex-1 min-h-0 flex flex-col relative"
+    >
+      {children}
+    </section>
   );
 }
