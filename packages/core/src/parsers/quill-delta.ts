@@ -28,7 +28,13 @@ function collectLines(ops: DeltaOp[]): Line[] {
   let current: Segment[] = [];
 
   for (const op of ops) {
-    if (typeof op.insert !== "string") continue;
+    if (typeof op.insert !== "string") {
+      const text = extractEmbedText(op.insert as Record<string, unknown>);
+      if (text) {
+        current.push({ text, attributes: op.attributes ?? {} });
+      }
+      continue;
+    }
 
     const parts = op.insert.split("\n");
 
@@ -50,6 +56,12 @@ function collectLines(ops: DeltaOp[]): Line[] {
   }
 
   return lines;
+}
+
+function extractEmbedText(insert: Record<string, unknown>): string | null {
+  const emoji = insert.slackemoji as { text?: string } | undefined;
+  if (emoji?.text) return emoji.text;
+  return null;
 }
 
 function buildMarkdown(lines: Line[]): string {

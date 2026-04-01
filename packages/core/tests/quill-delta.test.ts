@@ -202,6 +202,18 @@ describe("quillDeltaToMarkdown", () => {
     expect(quillDeltaToMarkdown(delta)).toBe("- level 0\n    - level 1\n        - level 2");
   });
 
+  it("converts slackemoji embeds to text", () => {
+    const delta = JSON.stringify({
+      ops: [
+        { insert: { slackemoji: { text: ":zap:" } } },
+        { insert: " " },
+        { attributes: { bold: true }, insert: "Dashboard loading speed" },
+        { attributes: { list: "bullet" }, insert: "\n" },
+      ],
+    });
+    expect(quillDeltaToMarkdown(delta)).toBe("- :zap: **Dashboard loading speed**");
+  });
+
   it("resets ordered list numbering after non-list content", () => {
     const delta = JSON.stringify({
       ops: [
