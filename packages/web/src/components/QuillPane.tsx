@@ -2,6 +2,7 @@ import Quill from "quill";
 import "quill/dist/quill.core.css";
 import "../quill.css";
 import { useEffect, useRef } from "react";
+import { replaceEmojiShortcodes } from "../emoji";
 
 const FORMATS = [
   "bold",
@@ -59,7 +60,7 @@ export function QuillPane({ deltaJson, scrollRef }: QuillPaneProps) {
     }
 
     const delta = JSON.parse(deltaJson);
-    quill.setContents(delta, "silent");
+    quill.setContents(replaceEmojiShortcodes(delta).ops, "silent");
   }, [deltaJson]);
 
   return (

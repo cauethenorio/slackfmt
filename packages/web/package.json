@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@slackfmt/core": "workspace:*",
+    "gemoji": "^8.1.0",
     "lucide-react": "^1.7.0",
     "quill": "^2.0.3",
     "react": "^19.0.0",
