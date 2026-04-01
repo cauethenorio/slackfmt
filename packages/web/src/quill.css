@@ -19,16 +19,20 @@
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-  background: var(--color-surface-card);
+  background: var(--color-surface-output);
 }
 
 /* Editor */
 .ql-editor {
-  padding: 1.25rem 2rem;
-  line-height: 1.5;
-  font-size: 17px;
-  font-family: Slack-Lato, Lato, "Noto Sans", appleLogo, sans-serif;
-  color: var(--color-text-secondary);
+  padding: 1.25rem 2rem 4rem;
+  line-height: 1.46668;
+  font-size: 15px;
+  font-family: Slack-Lato, Lato, appleLogo, sans-serif;
+  color: #1d1c1d;
+}
+
+.dark .ql-editor {
+  color: #d1d2d3;
 }
 
 .ql-editor p,
@@ -68,7 +72,7 @@
   background: rgba(232, 163, 73, 0.1);
   border: 1px solid rgba(232, 163, 73, 0.2);
   border-radius: 3px;
-  color: #c2792a;
+  color: #9a5b1a;
 }
 
 .dark .ql-editor code {
@@ -146,4 +150,17 @@
 .ql-editor li[data-list="bullet"].ql-indent-5 > .ql-ui:before,
 .ql-editor li[data-list="bullet"].ql-indent-8 > .ql-ui:before {
   content: "\25AA";
+}
+
+/* Mentions — Slack-style blue pill */
+.ql-editor .ql-mention-true {
+  background: rgba(29, 155, 209, 0.1);
+  color: #1264a3;
+  border-radius: 3px;
+  padding: 0 2px;
+}
+
+.dark .ql-editor .ql-mention-true {
+  background: rgba(29, 155, 209, 0.2);
+  color: #5ab8f0;
 }
