@@ -84,7 +84,6 @@
   scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
 }
 
-
 @keyframes fade-in {
   from {
     opacity: 0;
