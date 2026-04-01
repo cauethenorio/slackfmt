@@ -1,5 +1,13 @@
 # @slackfmt/core
 
+## 0.3.2
+
+### Patch Changes
+
+- a47b429: Fix slackemoji embeds being stripped during quill delta parsing
+
+  Non-string insert ops (like `{"slackemoji": {"text": ":zap:"}}`) were silently skipped, dropping emoji from converted output.
+
 ## 0.3.1
 
 ### Patch Changes
