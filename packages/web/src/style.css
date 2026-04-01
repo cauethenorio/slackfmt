@@ -42,6 +42,12 @@
   --color-privacy-bg: rgba(26, 26, 46, 0.35);
 }
 
+body {
+  background-color: var(--color-surface);
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom)
+    env(safe-area-inset-left);
+}
+
 @theme inline {
   --color-surface: var(--color-surface);
   --color-surface-output: var(--color-surface-output);

@@ -2,20 +2,26 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-    <meta name="theme-color" content="#fdf8f4" />
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#fdf8f4" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#1a1a2e" />
     <title># slackfmt | Instant Slack Formatting</title>
   </head>
   <body>
     <script>
       (function() {
         var saved = localStorage.getItem('theme');
-        var isDark = saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches);
-        if (isDark) {
+        if (saved) {
+          var isDark = saved === 'dark';
+          document.documentElement.classList.toggle('dark', isDark);
+          var color = isDark ? '#1a1a2e' : '#fdf8f4';
+          document.querySelectorAll('meta[name="theme-color"]').forEach(function(m) {
+            m.setAttribute('content', color);
+          });
+        } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
           document.documentElement.classList.add('dark');
-          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#1a1a2e');
         }
       })();
     </script>

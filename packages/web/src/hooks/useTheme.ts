@@ -19,7 +19,9 @@ function applyTheme(theme: Theme) {
     .getPropertyValue("--color-surface")
     .trim();
   if (surface) {
-    document.querySelector('meta[name="theme-color"]')?.setAttribute("content", surface);
+    for (const el of document.querySelectorAll('meta[name="theme-color"]')) {
+      el.setAttribute("content", surface);
+    }
   }
 }
 
