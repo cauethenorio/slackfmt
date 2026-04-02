@@ -44,8 +44,6 @@
 
 body {
   background-color: var(--color-surface);
-  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom)
-    env(safe-area-inset-left);
 }
 
 @theme inline {
