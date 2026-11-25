@@ -77,16 +77,16 @@ const remarkTablesToCodeBlocks: Plugin<[], Root> = () => (tree) => {
   });
 };
 
+const BLOCK_PARENTS = new Set(["root", "blockquote", "listItem", "footnoteDefinition"]);
+
 /**
  * Remark plugin that gives a raw HTML block's text back as plain paragraphs.
  * Slack can't hold the HTML, and dropping the block would drop its text.
  */
 const remarkHtmlBlocksToText: Plugin<[], Root> = () => (tree) => {
   const visit = (parent: Nodes) => {
-    if (parent.type !== "root" && parent.type !== "blockquote" && parent.type !== "listItem") {
-      if (parent.type === "list") for (const item of parent.children) visit(item);
-      return;
-    }
+    if (parent.type === "list") for (const item of parent.children) visit(item);
+    if (!BLOCK_PARENTS.has(parent.type) || !("children" in parent)) return;
     const children = parent.children as RootContent[];
     parent.children = children.flatMap((node): RootContent[] => {
       if (node.type !== "html") return [node];
