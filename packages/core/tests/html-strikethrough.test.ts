@@ -36,4 +36,59 @@ describe("HTML strikethrough", () => {
       delta({ insert: "struck", attributes: { bold: true, strike: true } }, { insert: "\n" }),
     );
   });
+
+  it("strikes text that starts or ends with a tilde", async () => {
+    const result = await convert("<p><s>~/Development</s> is gone</p><p>next <s>one~</s></p>", {
+      format: "html",
+    });
+    expect(result).toBe(
+      delta(
+        { insert: "~/Development", attributes: { strike: true } },
+        { insert: " is gone\n\nnext " },
+        { insert: "one~", attributes: { strike: true } },
+        { insert: "\n" },
+      ),
+    );
+  });
+
+  it("strikes text struck twice once", async () => {
+    const result = await convert("<p><s><del>struck</del> too</s></p>", { format: "html" });
+    expect(result).toBe(
+      delta({ insert: "struck too", attributes: { strike: true } }, { insert: "\n" }),
+    );
+  });
+
+  it("strikes neighbouring struck text as one run", async () => {
+    const result = await convert("<p><s>one</s><del>two</del><strike>three</strike></p>", {
+      format: "html",
+    });
+    expect(result).toBe(
+      delta({ insert: "onetwothree", attributes: { strike: true } }, { insert: "\n" }),
+    );
+  });
+
+  it("keeps a line break at a struck text's end outside it", async () => {
+    const result = await convert("<p><s>struck<br></s>kept</p>", { format: "html" });
+    expect(result).toContain(JSON.stringify({ insert: "struck", attributes: { strike: true } }));
+    expect(result).not.toContain("~");
+  });
+
+  it("strikes each paragraph of a struck block", async () => {
+    const result = await convert("<del><p>one</p><p>two</p></del>", { format: "html" });
+    expect(result).toBe(
+      delta(
+        { insert: "one", attributes: { strike: true } },
+        { insert: "\n\n" },
+        { insert: "two", attributes: { strike: true } },
+        { insert: "\n" },
+      ),
+    );
+  });
+
+  it("leaves code's own tildes alone", async () => {
+    const result = await convert("<p><s><code>~a</code></s></p>", { format: "html" });
+    expect(result).toBe(
+      delta({ insert: "~a", attributes: { strike: true, code: true } }, { insert: "\n" }),
+    );
+  });
 });
