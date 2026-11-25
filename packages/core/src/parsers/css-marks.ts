@@ -102,8 +102,11 @@ function applyToElement(element: Element, wanted: Set<Mark>, given: Set<Mark>): 
   const { on, off } = styleMarks(element);
   const tagMark = MARK_OF_TAG[element.tagName];
   const around = new Set(given);
-  if (tagMark === "bold" && off.includes("bold")) element.tagName = "span";
-  else if (tagMark) around.add(tagMark);
+  if (tagMark && (given.has(tagMark) || (tagMark === "bold" && off.includes("bold")))) {
+    element.tagName = "span";
+  } else if (tagMark) {
+    around.add(tagMark);
+  }
 
   const next = new Set([...wanted, ...on].filter((mark) => !off.includes(mark)));
   for (const mark of around) next.delete(mark);

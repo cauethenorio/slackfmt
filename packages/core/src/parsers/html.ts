@@ -31,9 +31,13 @@ turndown.addRule("cssMarks", {
     const marks = ((node as HTMLElement).getAttribute("data-marks") ?? "").split(" ") as Mark[];
     const open = marks.map((mark) => MARKERS[mark]).join("");
     const close = [...open].reverse().join("");
-    const text = content.trim();
-    const before = seam(node, "previousSibling", text[0]);
-    const after = seam(node, "nextSibling", text[text.length - 1]);
+    const trimmed = content.trim();
+    // A tilde beside the strikethrough's own would join it.
+    const text = marks.includes("strike")
+      ? trimmed.replace(/^~/, "\\~").replace(/([^\\])~$/, "$1\\~")
+      : trimmed;
+    const before = seam(node, "previousSibling", trimmed[0]);
+    const after = seam(node, "nextSibling", trimmed[trimmed.length - 1]);
     return before + open + text + close + after;
   },
 });
