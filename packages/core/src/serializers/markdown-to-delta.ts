@@ -1,4 +1,4 @@
-import type { Root, RootContent } from "mdast";
+import type { ListItem, Root, RootContent } from "mdast";
 import remarkGfm from "remark-gfm";
 import remarkParse from "remark-parse";
 import { unified } from "unified";
@@ -151,17 +151,26 @@ function processNode(
       pushNewline(ops, { header: node.depth });
       break;
 
-    case "list":
-      for (const item of node.children) {
-        if (item.type !== "listItem") continue;
-        const listType = node.ordered ? "ordered" : "bullet";
-        const itemBlockAttrs: BlockAttrs = { list: listType };
-        if (listDepth > 0) {
-          itemBlockAttrs.indent = listDepth;
+    case "list": {
+      let split = false;
+      node.children.forEach((item, index) => {
+        // A list that goes on after another block starts again at 1 in Slack, so its items go on as numbered text.
+        if (node.ordered && split) {
+          const lineAttrs: BlockAttrs = blockAttrs.blockquote ? { blockquote: true } : {};
+          const number = `${(node.start ?? 1) + index}. `;
+          processListItem(item.children, ops, lineAttrs, listDepth, number);
+        } else {
+          const listType = node.ordered ? "ordered" : "bullet";
+          const itemBlockAttrs: BlockAttrs = { list: listType };
+          if (listDepth > 0) {
+            itemBlockAttrs.indent = listDepth;
+          }
+          processListItem(item.children, ops, itemBlockAttrs, listDepth);
         }
-        processListItem(item.children, ops, itemBlockAttrs, listDepth);
-      }
+        split ||= splitsList(item);
+      });
       break;
+    }
 
     case "code":
       for (const line of node.value.split("\n")) {
@@ -188,18 +197,34 @@ function processNode(
   }
 }
 
+const SPLITTING_BLOCKS = new Set(["code", "blockquote", "heading", "thematicBreak", "table"]);
+
+/** Whether an item holds a block whose lines end the list it's in. */
+function splitsList(item: ListItem): boolean {
+  return item.children.some(
+    (child) =>
+      SPLITTING_BLOCKS.has(child.type) ||
+      (child.type === "list" && child.children.some(splitsList)),
+  );
+}
+
 /**
  * Process children of a listItem. The listItem wraps its content in a <paragraph>,
  * and may contain nested lists. We need to:
  * - Emit inline content from the paragraph with the list's block attrs on the \n
  * - Process nested lists at depth+1
+ * - Start the item's first line with its prefix, when it has one
  */
 function processListItem(
   children: RootContent[],
   ops: DeltaOp[],
   blockAttrs: BlockAttrs,
   listDepth: number,
+  prefix = "",
 ): void {
+  pushInsert(ops, prefix, {});
+  if (prefix && children[0]?.type !== "paragraph") pushNewline(ops, blockAttrs);
+
   for (const child of children) {
     if (child.type === "list") {
       processNode(child, ops, {}, {}, listDepth + 1);
