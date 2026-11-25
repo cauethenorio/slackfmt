@@ -31,6 +31,7 @@ function extractText(children: PhrasingContent[]): string {
       if (child.type === "text") return child.value;
       if ("children" in child) return extractText(child.children as PhrasingContent[]);
       if (child.type === "inlineCode") return child.value;
+      if (child.type === "image") return child.alt || child.url;
       return "";
     })
     .join("");
