@@ -19,14 +19,35 @@ turndown.addRule("brInPre", {
   },
 });
 
+const STRUCK_TAGS = ["DEL", "S", "STRIKE"];
+
+function isStruck(node: Node | null): boolean {
+  return !!node && STRUCK_TAGS.includes(node.nodeName);
+}
+
 turndown.addRule("strikethrough", {
   filter(node) {
-    return ["DEL", "S", "STRIKE"].includes(node.nodeName);
+    return isStruck(node);
   },
-  replacement(content) {
-    return `~~${content}~~`;
+  replacement(content, node) {
+    // One pair of markers per run: struck text inside struck text, or right beside it, shares them.
+    if ((node.parentNode as HTMLElement | null)?.closest("del, s, strike")) return content;
+    const open = isStruck(node.previousSibling) ? "" : "~~";
+    const close = isStruck(node.nextSibling) ? "" : "~~";
+    return content
+      .split(/(\n\s*\n)/)
+      .map((block) => strike(block, open, close))
+      .join("");
   },
 });
+
+/** Markers touch the text: a space or break outside them, a tilde beside them escaped. */
+function strike(block: string, open: string, close: string): string {
+  const [, before, text, after] = /^(\s*)([\s\S]*?)(\s*)$/.exec(block) as RegExpExecArray;
+  if (!text) return block;
+  const escaped = text.replace(/^~/, "\\~").replace(/([^\\])~$/, "$1\\~");
+  return before + open + escaped + close + after;
+}
 
 const PRESENTATIONAL_TAGS = new Set(["span", "div", "br"]);
 
