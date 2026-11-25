@@ -159,6 +159,10 @@ function processNode(
         if (listDepth > 0) {
           itemBlockAttrs.indent = listDepth;
         }
+        // Slack marks a list line inside a quote with a border, not with blockquote.
+        if (blockAttrs.blockquote) {
+          itemBlockAttrs.border = 1;
+        }
         processListItem(item.children, ops, itemBlockAttrs, listDepth);
       }
       break;
@@ -202,7 +206,7 @@ function processListItem(
 ): void {
   for (const child of children) {
     if (child.type === "list") {
-      processNode(child, ops, {}, {}, listDepth + 1);
+      processNode(child, ops, {}, blockAttrs.border ? { blockquote: true } : {}, listDepth + 1);
     } else if (child.type === "paragraph") {
       processNodes(child.children, ops, {}, blockAttrs, listDepth);
       pushNewline(ops, blockAttrs);
