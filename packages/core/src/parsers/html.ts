@@ -19,6 +19,8 @@ turndown.addRule("brInPre", {
   },
 });
 
+const HIDDEN_TAGS = new Set(["head", "style", "script", "title"]);
+
 turndown.addRule("plainPre", {
   filter(node) {
     return node.nodeName === "PRE" && !node.querySelector("code");
@@ -34,6 +36,7 @@ turndown.addRule("plainPre", {
 /** A node's text as written, unescaped, with its line breaks. */
 function rawText(node: Node): string {
   if (node.nodeName === "BR") return "\n";
+  if (HIDDEN_TAGS.has(node.nodeName.toLowerCase())) return "";
   if (node.childNodes.length === 0) return node.textContent ?? "";
   return Array.from(node.childNodes).map(rawText).join("");
 }
@@ -96,14 +99,13 @@ function extractText(nodes: RootContent[]): string {
   return result;
 }
 
-const HIDDEN_TAGS = new Set(["head", "style", "script", "title"]);
-
-/** The text a reader sees, without its spacing. */
+/** What a reader sees, without its spacing: the text, and a mark for each image or rule. */
 function visibleText(nodes: RootContent[]): string {
   return nodes
     .map((node) => {
       if (node.type === "text") return node.value.replace(/\s+/g, "");
       if (node.type !== "element" || HIDDEN_TAGS.has(node.tagName)) return "";
+      if (node.tagName === "img" || node.tagName === "hr") return `<${node.tagName}>`;
       return visibleText(node.children as RootContent[]);
     })
     .join("");
