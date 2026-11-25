@@ -22,7 +22,7 @@ turndown.addRule("brInPre", {
 const STRUCK_TAGS = ["DEL", "S", "STRIKE"];
 
 function isStruck(node: Node | null): boolean {
-  return !!node && STRUCK_TAGS.includes(node.nodeName);
+  return !!node && STRUCK_TAGS.includes(node.nodeName) && !!node.textContent?.trim();
 }
 
 turndown.addRule("strikethrough", {
@@ -34,10 +34,13 @@ turndown.addRule("strikethrough", {
     if ((node.parentNode as HTMLElement | null)?.closest("del, s, strike")) return content;
     const open = isStruck(node.previousSibling) ? "" : "~~";
     const close = isStruck(node.nextSibling) ? "" : "~~";
-    return content
+    const struck = content
       .split(/(\n\s*\n)/)
       .map((block) => strike(block, open, close))
       .join("");
+    const before = open && seam(node, "previousSibling", content[0]);
+    const after = close && seam(node, "nextSibling", content[content.length - 1]);
+    return before + struck + after;
   },
 });
 
@@ -47,6 +50,30 @@ function strike(block: string, open: string, close: string): string {
   if (!text) return block;
   const escaped = text.replace(/^~/, "\\~").replace(/([^\\])~$/, "$1\\~");
   return before + open + escaped + close + after;
+}
+
+const BLOCK =
+  /^(ADDRESS|ARTICLE|ASIDE|BLOCKQUOTE|BODY|BR|DD|DIV|DL|DT|FIGURE|FOOTER|FORM|H[1-6]|HEADER|HR|HTML|LI|MAIN|NAV|OL|P|PRE|SECTION|TABLE|TBODY|TD|TFOOT|TH|THEAD|TR|UL|X-TURNDOWN)$/;
+
+const MARKED = /^(B|STRONG|I|EM)$/;
+
+/** Markdown reads no marker between a word and punctuation, so an empty tag goes between them. */
+function seam(node: Node, side: "previousSibling" | "nextSibling", edge: string): string {
+  const beside = characterBeside(node, side);
+  return /[\p{P}\p{S}]/u.test(edge) && /[^\s\p{P}\p{S}]/u.test(beside) ? "<wbr>" : "";
+}
+
+function characterBeside(from: Node, side: "previousSibling" | "nextSibling"): string {
+  for (let node: Node | null = from; node && !BLOCK.test(node.nodeName); node = node.parentNode) {
+    // A parent's own marker stands between this and whatever is past it.
+    if (node !== from && MARKED.test(node.nodeName)) return "";
+    for (let sibling = node[side]; sibling; sibling = sibling[side]) {
+      if (BLOCK.test(sibling.nodeName)) return "";
+      const text = sibling.textContent ?? "";
+      if (text) return side === "previousSibling" ? text[text.length - 1] : text[0];
+    }
+  }
+  return "";
 }
 
 const PRESENTATIONAL_TAGS = new Set(["span", "div", "br"]);
