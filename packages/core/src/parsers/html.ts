@@ -19,6 +19,15 @@ turndown.addRule("brInPre", {
   },
 });
 
+turndown.addRule("strikethrough", {
+  filter(node) {
+    return ["DEL", "S", "STRIKE"].includes(node.nodeName);
+  },
+  replacement(content) {
+    return `~~${content}~~`;
+  },
+});
+
 const PRESENTATIONAL_TAGS = new Set(["span", "div", "br"]);
 
 function isPresentationalOnly(node: RootContent): boolean {
