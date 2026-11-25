@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { htmlToMarkdown } from "../src/parsers/html.js";
 import { convert } from "../src/pipeline.js";
 
 type Op = { insert: string; attributes?: Record<string, unknown> };
@@ -132,6 +133,28 @@ describe("marks set in CSS", () => {
       { insert: "\n" },
     ]);
   });
+
+  it("writes one pair of markers where a tag marks inside a style that marks", () => {
+    expect(htmlToMarkdown('<p><span style="font-weight:700">a <b>b</b> c</span></p>')).toBe(
+      "**a b c**",
+    );
+    expect(htmlToMarkdown('<div style="font-style:italic"><p><em>a</em> b</p></div>')).toMatch(
+      /^([*_])a b\1$/,
+    );
+  });
+
+  for (const text of ["~draft", "draft~", "~draft~", "~/notes"]) {
+    it(`keeps a tilde at the edge of struck text (${text})`, async () => {
+      expect(await ops(`<p><span style="text-decoration:line-through">${text}</span></p>`)).toEqual(
+        [{ insert: text, attributes: strike }, { insert: "\n" }],
+      );
+      expect(
+        await ops(
+          `<p>see <span style="text-decoration:line-through">${text}</span> and <s style="font-weight:700">x</s></p>`,
+        ),
+      ).toEqual(expect.arrayContaining([{ insert: text, attributes: strike }]));
+    });
+  }
 
   it("adds no marks inside code", async () => {
     expect(await ops('<p>run <code><span style="font-weight:700">it</span></code></p>')).toEqual([
