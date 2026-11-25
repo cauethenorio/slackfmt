@@ -17,7 +17,7 @@ const MARK_OF_TAG: Record<string, Mark> = {
 };
 
 const INLINE_TAGS = new Set(
-  "a abbr b bdi bdo big br cite code data del dfn em font i img input ins kbd label mark q s samp small span strike strong sub sup time tt u var wbr".split(
+  "a abbr b bdi bdo big br cite code data del dfn em font i img ins kbd label mark q s samp small span strike strong sub sup time tt u var wbr".split(
     " ",
   ),
 );
@@ -31,13 +31,13 @@ function styleMarks(element: Element): { on: Mark[]; off: Mark[] } {
   const value = (name: string) =>
     new RegExp(`(?:^|;)\\s*${name}\\s*:\\s*([^;]+)`, "i").exec(style)?.[1].trim().toLowerCase();
 
-  const weight = value("font-weight");
-  if (weight) {
-    const heavy = /^bold(er)?\b/.test(weight) || Number.parseInt(weight, 10) >= 600;
-    (heavy ? on : off).push("bold");
-  }
-  const slant = value("font-style");
-  if (slant) (/^(italic|oblique)\b/.test(slant) ? on : off).push("italic");
+  const weight = value("font-weight") ?? "";
+  const number = Number.parseInt(weight, 10);
+  if (/^bold(er)?\b/.test(weight) || number >= 600) on.push("bold");
+  else if (/^(normal|lighter|initial)\b/.test(weight) || number < 600) off.push("bold");
+  const slant = value("font-style") ?? "";
+  if (/^(italic|oblique)\b/.test(slant)) on.push("italic");
+  else if (/^(normal|initial)\b/.test(slant)) off.push("italic");
   const line = `${value("text-decoration") ?? ""} ${value("text-decoration-line") ?? ""}`;
   if (line.includes("line-through")) on.push("strike");
   return { on, off };
