@@ -1,9 +1,20 @@
-import type { Code, Heading, Paragraph, PhrasingContent, Root, Strong, Table } from "mdast";
+import type {
+  Code,
+  Heading,
+  Nodes,
+  Paragraph,
+  PhrasingContent,
+  Root,
+  RootContent,
+  Strong,
+  Table,
+} from "mdast";
 import remarkGfm from "remark-gfm";
 import remarkParse from "remark-parse";
 import remarkStringify from "remark-stringify";
 import type { Plugin } from "unified";
 import { unified } from "unified";
+import { htmlBlockTexts } from "./html-text.js";
 
 /**
  * Remark plugin that transforms heading nodes into bold paragraphs.
@@ -66,9 +77,33 @@ const remarkTablesToCodeBlocks: Plugin<[], Root> = () => (tree) => {
   });
 };
 
+/**
+ * Remark plugin that gives a raw HTML block's text back as plain paragraphs.
+ * Slack can't hold the HTML, and dropping the block would drop its text.
+ */
+const remarkHtmlBlocksToText: Plugin<[], Root> = () => (tree) => {
+  const visit = (parent: Nodes) => {
+    if (parent.type !== "root" && parent.type !== "blockquote" && parent.type !== "listItem") {
+      if (parent.type === "list") for (const item of parent.children) visit(item);
+      return;
+    }
+    const children = parent.children as RootContent[];
+    parent.children = children.flatMap((node): RootContent[] => {
+      if (node.type !== "html") return [node];
+      return htmlBlockTexts(node.value).map((value) => ({
+        type: "paragraph",
+        children: [{ type: "text", value }],
+      }));
+    }) as typeof parent.children;
+    for (const node of parent.children) visit(node);
+  };
+  visit(tree);
+};
+
 const processor = unified()
   .use(remarkParse)
   .use(remarkGfm)
+  .use(remarkHtmlBlocksToText)
   .use(remarkHeadingsToBold)
   .use(remarkTablesToCodeBlocks)
   .use(remarkStringify, {
