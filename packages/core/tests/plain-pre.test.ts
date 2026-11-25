@@ -64,4 +64,20 @@ describe("a plain <pre>", () => {
       ),
     ).toBe("# Title\n\n- item");
   });
+
+  it("keeps its characters and fences as written", async () => {
+    const result = await convert("<p>intro</p><pre>a*b<br>c_d <b>e</b><br>```</pre>", {
+      format: "html",
+    });
+    expect(result).toBe(
+      delta(
+        { insert: "intro\n\na*b" },
+        { insert: "\n", attributes: { "code-block": true } },
+        { insert: "c_d e" },
+        { insert: "\n", attributes: { "code-block": true } },
+        { insert: "```" },
+        { insert: "\n", attributes: { "code-block": true } },
+      ),
+    );
+  });
 });
