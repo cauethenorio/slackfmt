@@ -44,4 +44,33 @@ describe("hard breaks", () => {
       ),
     );
   });
+
+  for (const [name, mark] of [
+    ["backslash", "\\"],
+    ["two-space", "  "],
+  ]) {
+    it(`gives a ${name} break in a quote its line's quote`, async () => {
+      const result = await convert(`> first line${mark}\n> second line`, { format: "markdown" });
+      expect(result).toBe(
+        delta(
+          { insert: "first line" },
+          { insert: "\n", attributes: { blockquote: true } },
+          { insert: "second line" },
+          { insert: "\n", attributes: { blockquote: true } },
+        ),
+      );
+    });
+
+    it(`gives a ${name} break in a list item its line's list`, async () => {
+      const result = await convert(`- first line${mark}\n  second line`, { format: "markdown" });
+      expect(result).toBe(
+        delta(
+          { insert: "first line" },
+          { insert: "\n", attributes: { list: "bullet" } },
+          { insert: "second line" },
+          { insert: "\n", attributes: { list: "bullet" } },
+        ),
+      );
+    });
+  }
 });
