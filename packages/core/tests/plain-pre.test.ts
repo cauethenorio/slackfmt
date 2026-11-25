@@ -80,4 +80,21 @@ describe("a plain <pre>", () => {
       ),
     );
   });
+
+  it("keeps an image or a rule beside it", () => {
+    expect(
+      htmlToMarkdown('<pre>one</pre><p><img src="https://example.com/p.png" alt="pic"></p>'),
+    ).toBe("```\none\n```\n\n![pic](https://example.com/p.png)");
+    expect(htmlToMarkdown("<pre>one</pre><hr>")).toBe("```\none\n```\n\n* * *");
+  });
+
+  it("leaves out the text of a style or script inside it", async () => {
+    const result = await convert(
+      "<p>intro</p><pre><style>.a{}</style>code<script>run()</script></pre>",
+      { format: "html" },
+    );
+    expect(result).toBe(
+      delta({ insert: "intro\n\ncode" }, { insert: "\n", attributes: { "code-block": true } }),
+    );
+  });
 });
