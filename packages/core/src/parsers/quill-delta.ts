@@ -18,8 +18,8 @@ interface Segment {
 }
 
 export function quillDeltaToMarkdown(input: string): string {
-  const delta: QuillDelta = JSON.parse(input);
-  const lines = collectLines(delta.ops);
+  const delta: QuillDelta | DeltaOp[] = JSON.parse(input);
+  const lines = collectLines(Array.isArray(delta) ? delta : delta.ops);
   return buildMarkdown(lines);
 }
 
