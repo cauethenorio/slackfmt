@@ -1,4 +1,4 @@
-import type { Code, Heading, Paragraph, PhrasingContent, Root, Strong, Table } from "mdast";
+import type { Code, Heading, Nodes, Paragraph, PhrasingContent, Root, Strong, Table } from "mdast";
 import remarkGfm from "remark-gfm";
 import remarkParse from "remark-parse";
 import remarkStringify from "remark-stringify";
@@ -66,9 +66,33 @@ const remarkTablesToCodeBlocks: Plugin<[], Root> = () => (tree) => {
   });
 };
 
+function walk(node: Nodes, visit: (node: Nodes) => void): void {
+  visit(node);
+  if ("children" in node) for (const child of node.children) walk(child, visit);
+}
+
+/**
+ * Remark plugin that gives an image written as a reference its URL in place, so it
+ * can be serialized without its definition.
+ */
+const remarkInlineImageReferences: Plugin<[], Root> = () => (tree) => {
+  const urls = new Map<string, string>();
+  walk(tree, (node) => {
+    if (node.type === "definition" && !urls.has(node.identifier)) {
+      urls.set(node.identifier, node.url);
+    }
+  });
+  walk(tree, (node) => {
+    if (node.type !== "imageReference") return;
+    const url = urls.get(node.identifier);
+    if (url !== undefined) Object.assign(node, { type: "image", url });
+  });
+};
+
 const processor = unified()
   .use(remarkParse)
   .use(remarkGfm)
+  .use(remarkInlineImageReferences)
   .use(remarkHeadingsToBold)
   .use(remarkTablesToCodeBlocks)
   .use(remarkStringify, {

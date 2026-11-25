@@ -141,6 +141,10 @@ function processNode(
       processNodes(node.children, ops, { ...inlineAttrs, link: node.url }, blockAttrs, listDepth);
       break;
 
+    case "image":
+      pushInsert(ops, node.alt || node.url, { ...inlineAttrs, link: node.url });
+      break;
+
     case "paragraph":
       processNodes(node.children, ops, inlineAttrs, blockAttrs, listDepth);
       pushNewline(ops, blockAttrs);
