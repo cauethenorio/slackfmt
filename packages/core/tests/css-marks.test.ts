@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { markCssMarks } from "../src/parsers/css-marks.js";
 import { htmlToMarkdown } from "../src/parsers/html.js";
 import { convert } from "../src/pipeline.js";
 
@@ -155,6 +156,58 @@ describe("marks set in CSS", () => {
       ).toEqual(expect.arrayContaining([{ insert: text, attributes: strike }]));
     });
   }
+
+  it("keeps a break at the edge of marked text", () => {
+    expect(htmlToMarkdown('<p><span style="font-weight:700">Title<br></span>body</p>')).toBe(
+      "**Title**  \nbody",
+    );
+    expect(htmlToMarkdown('<p>x<span style="font-weight:700"><br>Title</span></p>')).toBe(
+      "x  \n**Title**",
+    );
+  });
+
+  for (const [style, mark] of [
+    ["font-weight:700", bold],
+    ["font-style:italic", italic],
+    ["text-decoration:line-through", strike],
+  ] as const) {
+    it(`marks both sides of a blank line (${style})`, async () => {
+      expect(await ops(`<p><span style="${style}">a<br><br>b</span></p>`)).toEqual([
+        { insert: "a", attributes: mark },
+        { insert: "\n\n" },
+        { insert: "b", attributes: mark },
+        { insert: "\n" },
+      ]);
+    });
+  }
+
+  for (const value of ["inherit", "unset"]) {
+    it(`keeps a mark its style ${value}s`, async () => {
+      expect(
+        await ops(
+          `<p style="font-weight:700;font-style:italic">a <span style="font-weight:${value};font-style:${value}">b</span></p>`,
+        ),
+      ).toEqual([{ insert: "a b", attributes: { bold: true, italic: true } }, { insert: "\n" }]);
+    });
+  }
+
+  it("leaves a checkbox out of the mark around it", () => {
+    expect(
+      markCssMarks(
+        '<ul><li style="font-weight:700"><input type="checkbox" checked> done</li></ul>',
+      ),
+    ).toContain('checked><span data-marks="bold"> done</span>');
+  });
+
+  it("marks punctuation beside a word, inside a tag that marks too", async () => {
+    expect(
+      await ops('<p>was<b><span style="text-decoration:line-through">(old)</span></b> new</p>'),
+    ).toEqual([
+      { insert: "was" },
+      { insert: "(old)", attributes: { bold: true, strike: true } },
+      { insert: " new\n" },
+    ]);
+  });
 
   it("adds no marks inside code", async () => {
     expect(await ops('<p>run <code><span style="font-weight:700">it</span></code></p>')).toEqual([
