@@ -19,6 +19,20 @@ turndown.addRule("brInPre", {
   },
 });
 
+turndown.addRule("taskListItem", {
+  filter(node) {
+    return (
+      node.nodeName === "INPUT" &&
+      node.getAttribute("type")?.toLowerCase() === "checkbox" &&
+      !!node.closest("li")
+    );
+  },
+  replacement(_content, node) {
+    const box = (node as HTMLElement).hasAttribute("checked") ? "[x]" : "[ ]";
+    return /^\s/.test(node.nextSibling?.textContent ?? "") ? box : `${box} `;
+  },
+});
+
 const PRESENTATIONAL_TAGS = new Set(["span", "div", "br"]);
 
 function isPresentationalOnly(node: RootContent): boolean {
