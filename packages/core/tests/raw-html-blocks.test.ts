@@ -56,6 +56,12 @@ describe("a raw HTML block in Markdown", () => {
     );
   });
 
+  it("keeps a footnote's text", async () => {
+    expect(await convertMarkdown("a[^1]\n\n[^1]: <div>inside</div>")).toBe(
+      delta({ insert: "a\n\ninside\n" }),
+    );
+  });
+
   it("leaves inline tags as they were: dropped, with their text kept", async () => {
     expect(await convertMarkdown("press <kbd>Cmd</kbd> now")).toBe(
       delta({ insert: "press Cmd now\n" }),
