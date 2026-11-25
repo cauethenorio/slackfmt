@@ -91,4 +91,32 @@ describe("HTML strikethrough", () => {
       delta({ insert: "~a", attributes: { strike: true, code: true } }, { insert: "\n" }),
     );
   });
+
+  for (const [html, before, text, after] of [
+    ["<p><del>Done.</del>Next</p>", "", "Done.", "Next\n"],
+    ["<p>was<del>(old)</del>new</p>", "was", "(old)", "new\n"],
+    ["<p>was<b><del>(old)</del></b> new</p>", "was", "(old)", " new\n"],
+  ]) {
+    it(`strikes punctuation beside a word (${html})`, async () => {
+      const { ops } = JSON.parse(await convert(html, { format: "html" }));
+      expect(ops.map((op: { insert: string }) => op.insert).join("|")).toBe(
+        [before, text, after].filter(Boolean).join("|"),
+      );
+      expect(ops.find((op: { insert: string }) => op.insert === text).attributes).toMatchObject({
+        strike: true,
+      });
+    });
+  }
+
+  it("strikes text inside other marks, beside a word", async () => {
+    const result = await convert("<p><del><b>old</b></del>new</p>", { format: "html" });
+    expect(result).toBe(
+      delta({ insert: "old", attributes: { strike: true, bold: true } }, { insert: "new\n" }),
+    );
+  });
+
+  it("strikes text before a struck space", async () => {
+    const result = await convert("<p><del>a</del><del> </del>b</p>", { format: "html" });
+    expect(result).toBe(delta({ insert: "a", attributes: { strike: true } }, { insert: " b\n" }));
+  });
 });
