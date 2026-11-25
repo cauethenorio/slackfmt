@@ -1,4 +1,4 @@
-import type { Code, Heading, Paragraph, PhrasingContent, Root, Strong, Table } from "mdast";
+import type { Code, Heading, Nodes, Paragraph, PhrasingContent, Root, Strong, Table } from "mdast";
 import remarkGfm from "remark-gfm";
 import remarkParse from "remark-parse";
 import remarkStringify from "remark-stringify";
@@ -66,9 +66,28 @@ const remarkTablesToCodeBlocks: Plugin<[], Root> = () => (tree) => {
   });
 };
 
+/**
+ * Remark plugin that keeps a hard break before an inline tag.
+ * remark-stringify swaps a line end before one for a space, unless something sits between them.
+ */
+const remarkBreaksBeforeTags: Plugin<[], Root> = () => (tree) => {
+  const visit = (parent: Nodes) => {
+    if (!("children" in parent)) return;
+    const children = parent.children as Nodes[];
+    parent.children = children.flatMap((node, index) =>
+      node.type === "break" && children[index + 1]?.type === "html"
+        ? [node, { type: "text", value: "" }]
+        : [node],
+    ) as typeof parent.children;
+    for (const node of parent.children) visit(node);
+  };
+  visit(tree);
+};
+
 const processor = unified()
   .use(remarkParse)
   .use(remarkGfm)
+  .use(remarkBreaksBeforeTags)
   .use(remarkHeadingsToBold)
   .use(remarkTablesToCodeBlocks)
   .use(remarkStringify, {
