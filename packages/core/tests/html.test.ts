@@ -89,7 +89,7 @@ describe("htmlToMarkdown", () => {
     });
 
     it("converts italic", () => {
-      expect(htmlToMarkdown("<em>hello</em>")).toBe("_hello_");
+      expect(htmlToMarkdown("<em>hello</em>")).toBe("*hello*");
     });
 
     it("converts a link", () => {

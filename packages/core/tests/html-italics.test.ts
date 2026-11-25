@@ -42,7 +42,7 @@ describe("HTML italics", () => {
     expect(result).toBe(
       delta(
         { insert: "un" },
-        { insert: "believ", attributes: { bold: true, italic: true } },
+        { insert: "believ", attributes: { italic: true, bold: true } },
         { insert: "able\n" },
       ),
     );

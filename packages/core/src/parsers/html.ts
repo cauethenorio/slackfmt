@@ -7,6 +7,7 @@ const turndown = new TurndownService({
   headingStyle: "atx",
   codeBlockStyle: "fenced",
   bulletListMarker: "-",
+  emDelimiter: "*",
   preformattedCode: true,
 });
 
