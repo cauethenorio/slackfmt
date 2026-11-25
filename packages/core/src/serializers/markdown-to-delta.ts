@@ -121,6 +121,10 @@ function processNode(
       break;
     }
 
+    case "break":
+      pushNewline(ops, blockAttrs);
+      break;
+
     case "strong":
       processNodes(node.children, ops, { ...inlineAttrs, bold: true }, blockAttrs, listDepth);
       break;
