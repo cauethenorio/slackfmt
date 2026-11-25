@@ -73,4 +73,14 @@ describe("hard breaks", () => {
       );
     });
   }
+
+  for (const [name, end] of [
+    ["backslash", "\\"],
+    ["two-space", "  "],
+  ]) {
+    it(`keeps a ${name} hard break before an inline tag`, async () => {
+      const result = await convert(`one${end}\n<kbd>two</kbd> three`, { format: "markdown" });
+      expect(result).toBe(delta({ insert: "one\ntwo three\n" }));
+    });
+  }
 });
