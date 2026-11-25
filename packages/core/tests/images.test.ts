@@ -57,4 +57,13 @@ describe("images", () => {
     });
     expect(result).toContain(JSON.stringify({ insert: "team cover", attributes: { link: cover } }));
   });
+
+  it("keeps an image in a table cell as its alt text or URL, since a code block holds no links", async () => {
+    const result = await convert(`| a | b |\n|---|---|\n| ![logo](u.png) | ![](v.png) |`, {
+      format: "markdown",
+    });
+    expect(JSON.parse(result).ops.map((op: { insert: string }) => op.insert)).toContain(
+      "logo   v.png",
+    );
+  });
 });
