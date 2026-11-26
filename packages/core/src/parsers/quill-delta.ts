@@ -73,25 +73,27 @@ function buildMarkdown(lines: Line[]): string {
     const line = lines[i];
     const blockType = getBlockType(line.attributes);
 
-    if (blockType === "bullet") {
-      const indentLevel = (line.attributes.indent as number) || 0;
-      // Reset ordered counter at this indent level (switching list type resets numbering)
-      orderedCounters.delete(indentLevel);
-      const indent = indentLevel * 4;
-      const prefix = `${" ".repeat(indent)}- `;
-      parts.push(prefix + inlineMarkdown(line.segments));
-      i++;
-    } else if (blockType === "ordered") {
-      const indentLevel = (line.attributes.indent as number) || 0;
-      const counter = (orderedCounters.get(indentLevel) || 0) + 1;
-      orderedCounters.set(indentLevel, counter);
-      // Reset counters for deeper levels
-      for (const key of orderedCounters.keys()) {
-        if (key > indentLevel) orderedCounters.delete(key);
+    if (isQuoted(line.attributes)) {
+      orderedCounters.clear();
+      const quoteLines: string[] = [];
+      while (i < lines.length && isQuoted(lines[i].attributes)) {
+        const { segments, attributes } = lines[i];
+        if (attributes.list) {
+          quoteLines.push(
+            `> ${listMarker(attributes, orderedCounters)}${inlineMarkdown(segments)}`,
+          );
+        } else {
+          // A quoted line right after a quoted list would read as part of its last item.
+          if (i > 0 && lines[i - 1].attributes.border) quoteLines.push(">");
+          orderedCounters.clear();
+          quoteLines.push(`> ${inlineMarkdown(segments)}`);
+        }
+        i++;
       }
-      const indent = indentLevel * 4;
-      const prefix = `${" ".repeat(indent)}${counter}. `;
-      parts.push(prefix + inlineMarkdown(line.segments));
+      orderedCounters.clear();
+      parts.push(quoteLines.join("\n"));
+    } else if (blockType === "bullet" || blockType === "ordered") {
+      parts.push(listMarker(line.attributes, orderedCounters) + inlineMarkdown(line.segments));
       i++;
     } else if (blockType === "code-block") {
       orderedCounters.clear();
@@ -101,14 +103,6 @@ function buildMarkdown(lines: Line[]): string {
         i++;
       }
       parts.push(`\`\`\`\n${codeLines.join("\n")}\n\`\`\``);
-    } else if (blockType === "blockquote") {
-      orderedCounters.clear();
-      const quoteLines: string[] = [];
-      while (i < lines.length && getBlockType(lines[i].attributes) === "blockquote") {
-        quoteLines.push(`> ${inlineMarkdown(lines[i].segments)}`);
-        i++;
-      }
-      parts.push(quoteLines.join("\n"));
     } else if (blockType === "header") {
       orderedCounters.clear();
       const level = Math.min(Math.max((line.attributes.header as number) || 1, 1), 6);
@@ -126,13 +120,35 @@ function buildMarkdown(lines: Line[]): string {
 
 function getBlockType(
   attrs: Record<string, unknown>,
-): "bullet" | "ordered" | "code-block" | "blockquote" | "header" | null {
+): "bullet" | "ordered" | "code-block" | "header" | null {
   if (attrs.list === "bullet") return "bullet";
   if (attrs.list === "ordered") return "ordered";
   if (attrs["code-block"]) return "code-block";
-  if (attrs.blockquote) return "blockquote";
   if (attrs.header) return "header";
   return null;
+}
+
+/** Slack marks a quoted list line with a border, and any other quoted line with blockquote. */
+function isQuoted(attrs: Record<string, unknown>): boolean {
+  if (attrs.list === "bullet" || attrs.list === "ordered") return !!attrs.border;
+  return !!attrs.blockquote && !attrs["code-block"];
+}
+
+function listMarker(attrs: Record<string, unknown>, orderedCounters: Map<number, number>): string {
+  const indentLevel = (attrs.indent as number) || 0;
+  const indent = " ".repeat(indentLevel * 4);
+  if (attrs.list === "bullet") {
+    // Reset ordered counter at this indent level (switching list type resets numbering)
+    orderedCounters.delete(indentLevel);
+    return `${indent}- `;
+  }
+  const counter = (orderedCounters.get(indentLevel) || 0) + 1;
+  orderedCounters.set(indentLevel, counter);
+  // Reset counters for deeper levels
+  for (const key of orderedCounters.keys()) {
+    if (key > indentLevel) orderedCounters.delete(key);
+  }
+  return `${indent}${counter}. `;
 }
 
 /**
