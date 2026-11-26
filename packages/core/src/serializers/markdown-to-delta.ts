@@ -159,7 +159,8 @@ function processNode(
         if (listDepth > 0) {
           itemBlockAttrs.indent = listDepth;
         }
-        processListItem(item.children, ops, itemBlockAttrs, listDepth);
+        const box = item.checked == null ? "" : item.checked ? "☑ " : "☐ ";
+        processListItem(item.children, ops, itemBlockAttrs, listDepth, box);
       }
       break;
 
@@ -193,13 +194,18 @@ function processNode(
  * and may contain nested lists. We need to:
  * - Emit inline content from the paragraph with the list's block attrs on the \n
  * - Process nested lists at depth+1
+ * - Start the item's first line with its prefix, when it has one
  */
 function processListItem(
   children: RootContent[],
   ops: DeltaOp[],
   blockAttrs: BlockAttrs,
   listDepth: number,
+  prefix = "",
 ): void {
+  pushInsert(ops, prefix, {});
+  if (prefix && children[0]?.type !== "paragraph") pushNewline(ops, blockAttrs);
+
   for (const child of children) {
     if (child.type === "list") {
       processNode(child, ops, {}, {}, listDepth + 1);
