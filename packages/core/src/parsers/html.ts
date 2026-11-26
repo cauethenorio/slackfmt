@@ -10,6 +10,8 @@ const turndown = new TurndownService({
   preformattedCode: true,
 });
 
+turndown.remove(["head", "style", "script", "title"]);
+
 turndown.addRule("brInPre", {
   filter(node) {
     return node.nodeName === "BR" && !!node.closest("pre");
