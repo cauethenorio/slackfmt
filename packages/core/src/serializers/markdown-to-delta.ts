@@ -11,6 +11,8 @@ interface DeltaOp {
 type InlineAttrs = Record<string, unknown>;
 type BlockAttrs = Record<string, unknown>;
 
+const THEMATIC_BREAK = "─".repeat(10);
+
 const parser = unified().use(remarkParse).use(remarkGfm);
 
 export function markdownToDelta(markdown: string): string {
@@ -168,6 +170,11 @@ function processNode(
         pushInsert(ops, line, {});
         pushNewline(ops, { "code-block": true });
       }
+      break;
+
+    case "thematicBreak":
+      pushInsert(ops, THEMATIC_BREAK, {});
+      pushNewline(ops, {});
       break;
 
     case "blockquote":
