@@ -151,17 +151,25 @@ function processNode(
       pushNewline(ops, { header: node.depth });
       break;
 
-    case "list":
-      for (const item of node.children) {
-        if (item.type !== "listItem") continue;
+    case "list": {
+      const start = node.ordered ? (node.start ?? 1) : 1;
+      // Slack's Delta has no start number, and Slack itself copies such a list as numbered text.
+      const numbered = start !== 1;
+      node.children.forEach((item, index) => {
+        if (numbered) {
+          const lineAttrs: BlockAttrs = blockAttrs.blockquote ? { blockquote: true } : {};
+          processListItem(item.children, ops, lineAttrs, listDepth, `${start + index}. `);
+          return;
+        }
         const listType = node.ordered ? "ordered" : "bullet";
         const itemBlockAttrs: BlockAttrs = { list: listType };
         if (listDepth > 0) {
           itemBlockAttrs.indent = listDepth;
         }
         processListItem(item.children, ops, itemBlockAttrs, listDepth);
-      }
+      });
       break;
+    }
 
     case "code":
       for (const line of node.value.split("\n")) {
@@ -193,13 +201,18 @@ function processNode(
  * and may contain nested lists. We need to:
  * - Emit inline content from the paragraph with the list's block attrs on the \n
  * - Process nested lists at depth+1
+ * - Start the item's first line with its prefix, when it has one
  */
 function processListItem(
   children: RootContent[],
   ops: DeltaOp[],
   blockAttrs: BlockAttrs,
   listDepth: number,
+  prefix = "",
 ): void {
+  pushInsert(ops, prefix, {});
+  if (prefix && children[0]?.type !== "paragraph") pushNewline(ops, blockAttrs);
+
   for (const child of children) {
     if (child.type === "list") {
       processNode(child, ops, {}, {}, listDepth + 1);
