@@ -19,6 +19,28 @@ turndown.addRule("brInPre", {
   },
 });
 
+const HIDDEN_TAGS = new Set(["head", "style", "script", "title"]);
+
+turndown.addRule("plainPre", {
+  filter(node) {
+    return node.nodeName === "PRE" && !node.querySelector("code");
+  },
+  replacement(_content, node) {
+    const text = rawText(node).replace(/^\n+|\n+$/g, "");
+    const longest = Math.max(2, ...(text.match(/`+/g) ?? []).map((run) => run.length));
+    const fence = "`".repeat(longest + 1);
+    return `\n\n${fence}\n${text}\n${fence}\n\n`;
+  },
+});
+
+/** A node's text as written, unescaped, with its line breaks. */
+function rawText(node: Node): string {
+  if (node.nodeName === "BR") return "\n";
+  if (HIDDEN_TAGS.has(node.nodeName.toLowerCase())) return "";
+  if (node.childNodes.length === 0) return node.textContent ?? "";
+  return Array.from(node.childNodes).map(rawText).join("");
+}
+
 const PRESENTATIONAL_TAGS = new Set(["span", "div", "br"]);
 
 function isPresentationalOnly(node: RootContent): boolean {
@@ -77,6 +99,18 @@ function extractText(nodes: RootContent[]): string {
   return result;
 }
 
+/** What a reader sees, without its spacing: the text, and a mark for each image or rule. */
+function visibleText(nodes: RootContent[]): string {
+  return nodes
+    .map((node) => {
+      if (node.type === "text") return node.value.replace(/\s+/g, "");
+      if (node.type !== "element" || HIDDEN_TAGS.has(node.tagName)) return "";
+      if (node.tagName === "img" || node.tagName === "hr") return `<${node.tagName}>`;
+      return visibleText(node.children as RootContent[]);
+    })
+    .join("");
+}
+
 function tryExtractSyntaxHighlighted(input: string): string | null {
   const tree = unified().use(rehypeParse, { fragment: false }).parse(input) as Root;
 
@@ -85,6 +119,9 @@ function tryExtractSyntaxHighlighted(input: string): string | null {
 
   // Check all children are presentational only
   if (!container.children.every((c) => isPresentationalOnly(c as RootContent))) return null;
+
+  // Beside other text it's one block among others, and returning it alone would lose the rest.
+  if (visibleText(tree.children as RootContent[]) !== visibleText([container])) return null;
 
   const text = extractText(container.children as RootContent[]);
   // Trim trailing newline that may result from structure
